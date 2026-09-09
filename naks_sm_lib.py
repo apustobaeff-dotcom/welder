@@ -73,12 +73,20 @@ THINGS THAT WILL SILENTLY CORRUPT YOUR DATA IF YOU DON'T KNOW THEM
    always the producer.
 
 6. ENCODING IS windows-1251, NOT UTF-8 — for both the page you fetch
-   (set `r.encoding = "windows-1251"`) and for any Cyrillic text you
-   put INTO a URL query param (e.g. the verification link, or a text
-   filter like Организация-заявитель). Percent-encode Cyrillic text by
-   encoding to the 'cp1251' codec first, then percent-encoding the
-   bytes — normal UTF-8 URL-encoding of Cyrillic will get you zero
-   results with no error.
+   (set `r.encoding = "windows-1251"`) and for any Cyrillic text you put
+   INTO a URL query param (e.g. the verification link, or a text filter
+   like Организация-заявитель/Марка СМ/ТУ-ГОСТ). `get()` in this module
+   builds every request's query string manually (`_build_query_string`)
+   specifically to cp1251-encode non-ASCII values itself instead of
+   handing them to `requests`' own `params=`, which defaults to UTF-8.
+   THIS BIT BEFORE: an earlier version passed `params=` straight to
+   `requests.get()`, so every Cyrillic text filter (organization name,
+   brand substring, ТУ/ГОСТ substring) silently matched ZERO rows with
+   no error — it looked like "this company isn't in the registry" when
+   it was actually a mis-encoded query the whole time. If you ever add a
+   new code path that calls `requests.get()`/`.post()` directly instead
+   of going through this module's `get()`, you WILL reintroduce this bug
+   for any Cyrillic parameter.
 
 =====================================================================
 REFERENCE DATA
@@ -175,17 +183,38 @@ HEADERS = {
 _nonce_counter = [0]
 
 
+def _quote_value(v):
+    """Percent-encode one param value the way naks.ru's GET forms expect:
+    windows-1251 bytes for anything non-ASCII (Cyrillic text filters),
+    plain ASCII quoting otherwise. See gotcha #7 — this is NOT optional;
+    requests' own `params=` encodes non-ASCII as UTF-8 by default, which
+    the site silently treats as "no match" (0 results, no error)."""
+    v = str(v)
+    try:
+        v.encode("ascii")
+        return quote(v, safe="")
+    except UnicodeEncodeError:
+        return quote(v.encode("cp1251"), safe="")
+
+
+def _build_query_string(params):
+    return "&".join(f"{quote(str(k), safe='[]')}={_quote_value(v)}" for k, v in params.items())
+
+
 def get(url, params=None, tries=4):
     """Stateless GET (no cookie jar reuse — see gotcha #2) with a
-    cache-busting nonce (see the transient-empty-page issue in gotcha #2)
-    and retry-with-backoff on network errors."""
+    cache-busting nonce (see the transient-empty-page issue in gotcha #2),
+    correct windows-1251 encoding of any Cyrillic param value (gotcha #7,
+    built manually — NOT passed via requests' `params=`), and
+    retry-with-backoff on network errors."""
     _nonce_counter[0] += 1
     params = dict(params or {})
     params["_cb"] = f"{int(time.time() * 1000)}{_nonce_counter[0]}"
+    full_url = f"{url}?{_build_query_string(params)}"
     last_exc = None
     for i in range(tries):
         try:
-            r = requests.get(url, params=params, headers=HEADERS, timeout=25)
+            r = requests.get(full_url, headers=HEADERS, timeout=25)
             r.encoding = "windows-1251"
             return r.text
         except Exception as e:
