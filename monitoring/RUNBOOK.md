@@ -16,11 +16,17 @@ pip install -q requests beautifulsoup4 openpyxl 2>/dev/null || true
 python3 monitoring/tests/test_classify.py   # должен напечатать OK
 ```
 
-## 1. Прямые сборщики (Telegram t.me/s, hh.ru API, RSS, YouTube RSS, НАКС-дельта)
+## 1. Прямые сборщики (Telegram t.me/s, hh.ru API, RSS, YouTube RSS, НАКС СМ и технологии)
 
 ```bash
-python3 monitoring/run_weekly.py --only telegram hh rss youtube naks
+python3 monitoring/run_weekly.py --only telegram hh rss youtube naks naks_st
 ```
+
+`naks_st` — дельта реестра технологий (АЦСТ): новые действующие свидетельства
+по высокопрочным сталям (группа 3 ОМ или марка σт ≥ 420 в «Основных
+материалах»). Это самый сильный сигнал: предприятие уже варит такие стали.
+Полный обход 163 АЦСТ с бисекцией дат занимает десятки минут — запускать
+в фоне.
 
 Если сеть контейнера закрыта (в health.json почти всё `ProxyError` /
 `403`), прямые сборщики не работают. Тогда не повторять запуск, а перейти

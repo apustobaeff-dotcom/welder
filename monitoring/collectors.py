@@ -176,3 +176,39 @@ def naks_delta(known_svid, shifr_list, log=print):
                                               "predstavitel", "postavshik", "potrebitel")},
         })
     return out, current
+
+
+# --- НАКС: еженедельная дельта реестра технологий (АЦСТ) --------------------
+
+def naks_st_delta(known_svid, grade_matcher, log=print):
+    """Новые действующие свидетельства о готовности к применению технологий
+    сварки ВЫСОКОПРОЧНЫХ сталей (группа 3 ОМ или высокопрочная марка в тексте).
+    Предприятие, аттестовавшее такую технологию, уже варит эти стали —
+    это самый «тёплый» лид на СМ. Первый прогон только фиксирует базу."""
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    import naks_st_lib as st
+
+    today = dt.date.today().strftime("%d.%m.%Y")
+    rows = st.collect_rows(st.build_filter_params(date_active_from=today,
+                                                  date_active_to="31.12.2099"), log=log)
+    current, out = set(), []
+    for r in rows.values():
+        if r["cancelled"]:
+            continue
+        current.add(r["svid_num"])
+        if not known_svid or r["svid_num"] in known_svid:
+            continue
+        if not st.is_high_strength(r, grade_matcher):
+            continue
+        out.append({
+            "source": "НАКС реестр технологий (АЦСТ)", "source_type": "naks_st",
+            "url": st.verification_url(r["svid_num"]),
+            "title": f"Аттестация технологии: {r['organization']} — {r['sposoby']}, "
+                     f"ОМ гр. {','.join(map(str, r['groups'])) or '?'} (св. {r['svid_num']})",
+            "text": f"НАКС аттестация технологии сварки. Основные материалы: {r['osn_materialy']}. "
+                    f"Способы: {r['sposoby']}. Группы ТУ: {r['gruppy']}. Высокопрочная сталь.",
+            "date": dt.date.today().isoformat(), "org": r["organization"],
+            "action": "Предприятие аттестовало технологию сварки высокопрочной стали: "
+                      "выйти к главному сварщику с СМ под эту марку/группу",
+        })
+    return out, current

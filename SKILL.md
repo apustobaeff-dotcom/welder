@@ -1,6 +1,6 @@
 ---
 name: naks-sm-registry
-description: Scrape the NAKS registry of attested welding materials (naks.ru/registry/reg/sm/) by any combination of criteria — material type, brand, real classification (AWS/EN/ISO, read from the card's actual text, not just the brand name), organization/producer/representative, diameter, ТУ/ГОСТ, welding method, technical device group, attestation type, a specific attestation center, status (active/cancelled/expired), etc. — and export matching certificates to Excel. Use when the user asks to parse, scrape, look up, cross-check, or export data from the NAKS сварочные материалы registry.
+description: Scrape the NAKS registry of attested welding materials (naks.ru/registry/reg/sm/) by any combination of criteria — material type, brand, real classification (AWS/EN/ISO, read from the card's actual text, not just the brand name), organization/producer/representative, diameter, ТУ/ГОСТ, welding method, technical device group, attestation type, a specific attestation center, status (active/cancelled/expired), etc. — and export matching certificates to Excel. Use when the user asks to parse, scrape, look up, cross-check, or export data from the NAKS сварочные материалы registry. Also covers the sibling registry of attested welding technologies (naks.ru/registry/reg/st/, АЦСТ) via naks_st_lib.py — which organisations weld which base materials (group 3 ОМ = high-strength steels).
 ---
 
 # NAKS welding-materials registry (reg/sm) scraper
@@ -124,9 +124,33 @@ Files in this skill directory:
      the raw detail HTML) rather than left blank because a template
      variant (see gotcha #5) wasn't handled.
 
+## Sibling: registry of welding technologies (АЦСТ) — `naks_st_lib.py`
+
+`https://naks.ru/registry/reg/st/` — «Реестр организаций, прошедших проверку
+готовности к применению аттестованных технологий сварки». Same Bitrix
+engine; `naks_st_lib.py` reuses `naks_sm_lib.get()` (stateless, cp1251) and
+the shared `SVARKA`/`TECH`/`TYPE_ATT` tables (verified identical on the live
+form 2026-10-09). Read its module docstring first. Key differences:
+
+- List endpoint `/ast/reestrattst2/index.php`; 163 centres in `AC_MAP`
+  (АЦСТ-1…163); extra filters `section` (Производственные/Исследовательские),
+  `osn_materialy` (substring of «Основные материалы»), `gazprom=True`.
+- **A single AC already hits the 500 cap** — `collect_rows()` shards by AC
+  *and* bisects the validity-date range until every leaf is < 500.
+- The list row already carries «Основные материалы» with group numbers and
+  steel grades → `row["groups"]` (via `base_metal_groups()`).
+  **High-strength steels = group 3 ОМ** (`HIGH_STRENGTH_GROUP`);
+  `is_high_strength(row, grade_matcher)` also accepts an explicit grade
+  match, because applicants sometimes file a high-strength grade elsewhere.
+- Detail card («Область распространения») parsing is **not yet verified**
+  against live markup (gotcha #6) — inspect one real card on first direct run.
+- Worked example: `example_st_task.py` (active high-strength technologies →
+  Excel). Offline tests: `python3 tests/test_naks_st.py` (real list-page
+  fixture + simulated cap/bisection).
+
 ## Known limitation / scope
 
-This has only been built and validated against `/registry/reg/sm/`
+The SM engine has been built and validated against `/registry/reg/sm/`, the ST engine against `/registry/reg/st/` (list level)
 (сварочные материалы — welding consumables). NAKS runs other registries
 (e.g. welders, equipment, procedures) that may sit on the same Bitrix
 engine with a very similar filter-form/detail-card pattern, but the field

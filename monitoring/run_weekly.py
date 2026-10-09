@@ -46,7 +46,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, default=7)
     ap.add_argument("--extra", help="JSON-список записей из веб-поиска")
-    ap.add_argument("--only", nargs="*", help="telegram hh rss youtube naks")
+    ap.add_argument("--only", nargs="*", help="telegram hh rss youtube naks naks_st")
     ap.add_argument("--notes", help="HTML-файл с резюме «Главное за неделю»")
     ap.add_argument("--save-state", action="store_true")
     args = ap.parse_args()
@@ -57,7 +57,7 @@ def main():
     outdir = os.path.join(HERE, "out", week)
     os.makedirs(outdir, exist_ok=True)
     state = load_state()
-    want = set(args.only) if args.only is not None else {"telegram", "hh", "rss", "youtube", "naks"}
+    want = set(args.only) if args.only is not None else {"telegram", "hh", "rss", "youtube", "naks", "naks_st"}
 
     raw, health = [], []
 
@@ -96,6 +96,22 @@ def main():
         run("НАКС реестр СМ (дельта)", naks_run)
         if new_svid.get("all"):
             state["naks_svid"] = new_svid["all"]
+
+    if "naks_st" in want:
+        st_all = {}
+
+        def hs(text):
+            c = classify.classify(text)
+            return bool(c and (c["max_class"] or 0) >= 420)
+
+        def naks_st_run():
+            items, current = collectors.naks_st_delta(set(state.get("naks_st_svid", [])),
+                                                      hs, log=lambda m: None)
+            st_all["all"] = sorted(current)
+            return items
+        run("НАКС реестр технологий (дельта, ВП стали)", naks_st_run)
+        if st_all.get("all"):
+            state["naks_st_svid"] = st_all["all"]
 
     if args.extra:
         with open(args.extra, encoding="utf-8") as f:
