@@ -22,10 +22,12 @@ THINGS THAT WILL SILENTLY CORRUPT YOUR DATA IF YOU DON'T KNOW THEM
    Same cap as the SM registry ("НАЙДЕНО ЗАПИСЕЙ: 500" = possibly capped).
    But in this registry a SINGLE attestation centre already hits the cap:
    АЦСТ-1 alone with "valid from today" reported exactly 500 on
-   2026-10-09. So `collect_rows()` shards by AC (163 centres, AC_MAP) and,
-   for any shard still at >= 500, recursively BISECTS the
+   2026-10-09 (real size 1457). So `collect_rows()` recursively BISECTS the
    «Срок действия свидетельства до» date range until every leaf is under
-   the cap. Never trust a shard total of exactly 500.
+   the cap (a single day still at the cap is split by AC). Never trust a
+   total of exactly 500. A full-registry walk is slow (~8 min per 1.5k
+   rows); for high-strength work use collect_high_strength(), which unions
+   targeted «Основные материалы» substring queries (HS_QUERIES).
 
 2. Stateless requests only (inherited from naks_sm_lib gotcha #2). Use
    naks_sm_lib.get(); do not introduce a shared requests.Session.
@@ -55,17 +57,16 @@ THINGS THAT WILL SILENTLY CORRUPT YOUR DATA IF YOU DON'T KNOW THEM
    (heat-resistant, М02). is_high_strength() therefore checks group 3 OR
    a high-strength grade in the text (optional grade_matcher callback).
 
-6. DETAIL CARD («открыть» → «Область распространения») IS NOT VERIFIED.
-   The modal is filled by an inline onclick handler on the button. The
-   only tool available when this was written (a scraping proxy) strips
-   on* attributes, so neither the detail endpoint nor the card markup
-   could be inspected. parse_list_page() therefore extracts ANY URL found
-   in the button's onclick (expected, by analogy with the SM registry, to
-   be /ast/reestrattst2/detail.php?ID=...), and parse_detail() is a
-   generic label/value + full-text extractor. On the first run with
-   direct network access, print one onclick and one detail HTML and
-   harden parse_detail() against the real layout before relying on
-   detail fields (thicknesses, diameters, positions, consumables used).
+6. DETAIL CARD («открыть» → «Область распространения»). The button's
+   onclick is
+     clear_modal(); jsAjaxUtil.InsertDataToNode("/ast/reestrattst2/detail.php?ID=<b64>", "oblast_att")
+   (verified live 2026-10-09). The ID is base64 of a PHP-serialized
+   {svid_num, svid_date}; take it from the row, do not construct it.
+   Scraping proxies strip on* attributes — fetch with naks_sm_lib.get().
+   The card's «Сварочные (наплавочные) материалы» row names the actual
+   consumables the plant qualified with (e.g. "электроды LB-52U") —
+   parse_detail() exposes it as sm_text / sm_marks. This is the field
+   that tells you WHOSE consumables a high-strength welder currently uses.
 
 7. Page size is 25 rows; pagination param PAGEN_1 (same as SM).
 
@@ -249,12 +250,31 @@ def parse_list_page(html):
     return found, rows
 
 
-_GROUP_RE = re.compile(r"(?:(?<=^)|(?<=[,+.]\s)|(?<=[,+]))\s*(?:Группа\s*)?(\d{1,2})\s*(?=\(|-\s|\s-\s)", re.I)
+# Номер группы ОМ в свободном тексте «Основных материалов». Реальные формы
+# (живой реестр, 2026-10-09):
+#   "1 (Ст3сп, …, 10, 15, 20 …)"   "Группа 1, марки согласно ПТД"
+#   "1-14ХГНДЦ, 2-14ХГНДЦ"          "1 – 09Г2С, 20ГЛ, 2 – 10ХСНД, К56"
+#   "1- 09Г2С и другие +3-30ХГСА"   "3(М03), 1+3 (М01 + М03) - 09Г2С + С590, S690"
+#   "Группа 30 (ПЭ 80, ПЭ 100)"  ← группы 2x/3x — полимеры, не сталь
+# Поэтому: содержимое скобок выкидываем (там списки марок вида "10, 15, 20"),
+# номер считаем группой только в начале сегмента (после начала строки, «,», «;»,
+# «+») и только если за ним идёт «(», тире или «+», либо перед ним слово «Группа».
+# Коды М01/М02/М03… тоже дают номер группы.
+_PARENS_RE = re.compile(r"\([^()]*\)")
+_GROUP_RE = re.compile(
+    r"(?:^|[,;+])\s*(?:(Групп[аы]\s*)(\d{1,2})|(\d{1,2})(?=\s*(?:\(|[-–—]|\+)))", re.I)
+_M_CODE_RE = re.compile(r"(?<![\w])[МM]0(\d)(?!\d)")
 
 
 def base_metal_groups(text):
-    """Group numbers mentioned in «Основные материалы»: "1 (…), 9 (…)" -> [1, 9]."""
-    return sorted({int(g) for g in _GROUP_RE.findall(text or "")})
+    """Group numbers in «Основные материалы»: "1 (…), 9 (…)" -> [1, 9];
+    "3(М03), 1+3 (М01 + М03) - …" -> [1, 3]."""
+    t = text or ""
+    groups = {int(d) for d in _M_CODE_RE.findall(t)}
+    flat = _PARENS_RE.sub("(", t)
+    for m in _GROUP_RE.finditer(flat):
+        groups.add(int(m.group(2) or m.group(3)))
+    return sorted(groups)
 
 
 def _page(params, page, expected_min, max_tries=5, log=None):
@@ -308,9 +328,176 @@ def _collect_with_bisect(params, date_from, date_to, log=None, sleep=0.2, depth=
         return _collect_leaf(p, found, log=log, sleep=sleep)
     a, b = _to_ord(date_from), _to_ord(date_to)
     if a >= b:
+        if "arrFilter_pf[num_acst][0]" not in params:
+            out = {}
+            for ac in ALL_AC_IDS:   # один день всё ещё ≥ 500 — делим этот день по АЦ
+                q = dict(params)
+                q["arrFilter_pf[num_acst][0]"] = str(ac)
+                out.update(_collect_with_bisect(q, date_from, date_to, log, sleep, depth + 1))
+            return out
         if log:
-            log(f"  WARNING: {found} rows on a single day {date_from} — still capped; "
-                f"add another split (type_att/tech) for this shard")
+            log(f"  WARNING: {found} rows on a single day {date_from} in one AC — still capped")
+        return _collect_leaf(p, min(found, CAP), log=log, sleep=sleep)
+    mid = (a + b) // 2
+    if log:
+        log(f"  {'  ' * depth}bisect {date_from}–{date_to} ({found}+)")
+    out = _collect_with_bisect(params, date_from, _from_ord(mid), log, sleep, depth + 1)
+    out.update(_collect_with_bisect(params, _from_ord(mid + 1), date_to, log, sleep, depth + 1))
+    return out
+
+
+def collect_rows(base_params, ac_ids=None, log=None, sleep=0.2,
+                 default_from="01.01.2000", default_to="31.12.2099"):
+    """Fetch every row matching base_params, beating the 500 cap (gotcha #1).
+
+    Default: bisect the validity-date range until each leaf is < 500 (a day
+    that is still capped is split by AC). Live check 2026-10-09: АЦСТ-1,
+    active certificates -> 1457 rows, every leaf matched the site's count.
+    Pass ac_ids=[...] to restrict to specific centres. Returns {svid_num: row}."""
+    date_from = base_params.get("arrFilter_DATE_ACTIVE_TO_1", default_from)
+    date_to = base_params.get("arrFilter_DATE_ACTIVE_TO_2", default_to)
+    if ac_ids is None:
+        return _collect_with_bisect(base_params, date_from, date_to, log=log, sleep=sleep)
+    all_rows = {}
+    for ac in ac_ids:
+        p = dict(base_params)
+        p["arrFilter_pf[num_acst][0]"] = str(ac)
+        got = _collect_with_bisect(p, date_from, date_to, log=log, sleep=sleep)
+        if got and log:
+            log(f"AC id {ac}: {len(got)} rows")
+        all_rows.update(got)
+        time.sleep(sleep)
+    return all_rows
+
+
+# Подстроки «Основных материалов», которыми сайт сужает выборку до кандидатов
+# в высокопрочные (подобраны на живом реестре 09.10.2026; фильтр сайта — по
+# подстроке, пунктуацию учитывает плохо: "3(" и "3 (" возвращают почти всё).
+# Это фильтр ПОЛНОТЫ, точность даёт is_high_strength() после сбора.
+HS_QUERIES = [
+    "М03", "M03", "Группа 3", "3 –", "3-",
+    "К56", "К60", "К65", "X65", "X70", "X80",
+    "С390", "С440", "С460", "С590", "S420", "S460", "S500", "S550", "S690", "S700",
+    "S890", "S960", "Q690", "Weldox", "Strenx", "Hardox", "W700", "MAGSTRONG",
+    "Quend", "14ХГНДЦ", "10ХСНД", "15ХСНД", "30ХГСА", "12ГН2МФАЮ", "14Х2ГМР", "АБ2",
+    "высокопрочн",
+]
+
+
+def collect_high_strength(date_from=None, date_to="31.12.2099", grade_matcher=None,
+                          queries=HS_QUERIES, log=None, sleep=0.2):
+    """Active, non-cancelled certificates for high-strength steels:
+    union of site-level HS_QUERIES, then is_high_strength() on each row.
+    Returns {svid_num: row} with row["_hs_reason"]."""
+    import datetime as _dt
+    date_from = date_from or _dt.date.today().strftime("%d.%m.%Y")
+    pool = {}
+    for q in queries:
+        got = collect_rows(build_filter_params(osn_materialy=q, date_active_from=date_from,
+                                               date_active_to=date_to), log=log, sleep=sleep)
+        if log:
+            log(f"query {q!r}: {len(got)}")
+        pool.update(got)
+    out = {}
+    for k, r in pool.items():
+        if r["cancelled"]:
+            continue
+        by_group = HIGH_STRENGTH_GROUP in r["groups"]
+        by_grade = bool(grade_matcher and grade_matcher(r["osn_materialy"]))
+        if by_group or by_grade:
+            r["_hs_reason"] = " + ".join(filter(None, ["группа 3 (М03)" if by_group else "",
+                                                       "марка σт≥420" if by_grade else ""]))
+            out[k] = r
+    return out
+
+
+# Номер группы ОМ в свободном тексте «Основных материалов». Реальные формы
+# (живой реестр, 2026-10-09):
+#   "1 (Ст3сп, …, 10, 15, 20 …)"   "Группа 1, марки согласно ПТД"
+#   "1-14ХГНДЦ, 2-14ХГНДЦ"          "1 – 09Г2С, 20ГЛ, 2 – 10ХСНД, К56"
+#   "1- 09Г2С и другие +3-30ХГСА"   "3(М03), 1+3 (М01 + М03) - 09Г2С + С590, S690"
+#   "Группа 30 (ПЭ 80, ПЭ 100)"  ← группы 2x/3x — полимеры, не сталь
+# Поэтому: содержимое скобок выкидываем (там списки марок вида "10, 15, 20"),
+# номер считаем группой только в начале сегмента (после начала строки, «,», «;»,
+# «+») и только если за ним идёт «(», тире или «+», либо перед ним слово «Группа».
+# Коды М01/М02/М03… тоже дают номер группы.
+_PARENS_RE = re.compile(r"\([^()]*\)")
+_GROUP_RE = re.compile(
+    r"(?:^|[,;+])\s*(?:(Групп[аы]\s*)(\d{1,2})|(\d{1,2})(?=\s*(?:\(|[-–—]|\+)))", re.I)
+_M_CODE_RE = re.compile(r"(?<![\w])[МM]0(\d)(?!\d)")
+
+
+def base_metal_groups(text):
+    """Group numbers in «Основные материалы»: "1 (…), 9 (…)" -> [1, 9];
+    "3(М03), 1+3 (М01 + М03) - …" -> [1, 3]."""
+    t = text or ""
+    groups = {int(d) for d in _M_CODE_RE.findall(t)}
+    flat = _PARENS_RE.sub("(", t)
+    for m in _GROUP_RE.finditer(flat):
+        groups.add(int(m.group(2) or m.group(3)))
+    return sorted(groups)
+
+
+def _page(params, page, expected_min, max_tries=5, log=None):
+    p = dict(params)
+    if page > 1:
+        p["PAGEN_1"] = str(page)
+    found, rows = None, []
+    for attempt in range(1, max_tries + 1):
+        found, rows = parse_list_page(get(LIST_URL, params=p))
+        if len(rows) >= expected_min:
+            return found, rows
+        if log:
+            log(f"  short page {page} (got {len(rows)}, expected >= {expected_min}), retry {attempt}")
+        time.sleep(0.8 * attempt)
+    return found, rows
+
+
+def _collect_leaf(params, found, log=None, sleep=0.2):
+    out = {}
+    pages = (found + PAGE_SIZE - 1) // PAGE_SIZE
+    for page in range(1, pages + 1):
+        expected = min(PAGE_SIZE, found - (page - 1) * PAGE_SIZE)
+        _, rows = _page(params, page, expected, log=log)
+        for r in rows:
+            out[r["svid_num"]] = r
+        time.sleep(sleep)
+    if len(out) != found and log:
+        log(f"  WARNING: leaf collected {len(out)} but site reported {found}")
+    return out
+
+
+def _to_ord(d):
+    dd, mm, yy = map(int, d.split("."))
+    import datetime as _dt
+    return _dt.date(yy, mm, dd).toordinal()
+
+
+def _from_ord(o):
+    import datetime as _dt
+    return _dt.date.fromordinal(o).strftime("%d.%m.%Y")
+
+
+def _collect_with_bisect(params, date_from, date_to, log=None, sleep=0.2, depth=0):
+    p = dict(params)
+    p["arrFilter_DATE_ACTIVE_TO_1"] = date_from
+    p["arrFilter_DATE_ACTIVE_TO_2"] = date_to
+    found, _ = parse_list_page(get(LIST_URL, params=p))
+    if not found:
+        return {}
+    if found < CAP:
+        return _collect_leaf(p, found, log=log, sleep=sleep)
+    a, b = _to_ord(date_from), _to_ord(date_to)
+    if a >= b:
+        if "arrFilter_pf[num_acst][0]" not in params:
+            out = {}
+            for ac in ALL_AC_IDS:   # один день всё ещё ≥ 500 — делим этот день по АЦ
+                q = dict(params)
+                q["arrFilter_pf[num_acst][0]"] = str(ac)
+                out.update(_collect_with_bisect(q, date_from, date_to, log, sleep, depth + 1))
+            return out
+        if log:
+            log(f"  WARNING: {found} rows on a single day {date_from} in one AC — still capped")
         return _collect_leaf(p, min(found, CAP), log=log, sleep=sleep)
     mid = (a + b) // 2
     if log:
@@ -350,8 +537,11 @@ def collect_rows(base_params, ac_ids=None, log=None, sleep=0.2,
 
 
 def fetch_detail(row):
-    """Detail HTML for a list row, or None if no detail URL was found
-    in the button's onclick (see gotcha #6)."""
+    """Detail («Область распространения») HTML for a list row, or None if
+    the row carries no detail URL. Endpoint verified 2026-10-09:
+    /ast/reestrattst2/detail.php?ID=<base64 of a PHP-serialized
+    {svid_num (cp1251), svid_date}> — always take it from the row, never
+    build it yourself."""
     url = row.get("detail_url")
     if not url:
         return None
@@ -360,25 +550,112 @@ def fetch_detail(row):
     return get(base, params=params)
 
 
+def _txt(el, sep=" "):
+    for br in el.find_all("br"):
+        br.replace_with("\n")
+    t = el.get_text(sep, strip=True).replace("\xa0", " ")
+    return re.sub(r"[ \t]+", " ", re.sub(r"\s*\n\s*", " | ", t)).strip(" |")
+
+
+# Марки СМ в «Сварочные (наплавочные) материалы». Реальные формы (2026-10-09):
+#   "электроды LB-52U и другие …"            "Проволока: AKEM4. Флюс: OK Flux 10.62P"
+#   "ULTRA 700"                              "… марки Nittetsu L-74S и другие аналоги"
+#   "типа Э50А марок LB-52U, ОК 53.70 …"     "Сварочная проволока: Св-08Г2С-О и другие"
+# Ищем сами «марочные» токены, а не текст после ключевого слова: латинские
+# бренды (≥1 цифра или ≥2 слова) и типовые отечественные обозначения.
+_SM_LATIN_RE = re.compile(
+    r"(?<![\w.-])([A-Z][A-Za-z]*[A-Za-z0-9.\-/]*(?:\s+(?:[A-Z][A-Za-z0-9.\-/]*|\d[\w.\-/]*)){0,2})")
+_SM_CYR_RE = re.compile(
+    r"(?<![\w-])((?:Св|УОНИ|ОЗС|АНО|МР|ЦЛ|ЦУ|ТМУ|ОК|ЛБ|ЭА|ТМЛ|ЦТ|ОЗЛ|НИАТ|ПП|ПГ)"
+    r"[\s-]?\d[\w.\-/]*|Св-[\wА-Яа-я.\-/]+|ОК\s\d+\.\d+)")
+_SM_NOT_MARK = re.compile(r"^(?:ПТД|НД|ГОСТ|ТУ|СТО|ISO|AWS|EN|DIN|РД|СП|ВСН)\b|^Э\d", re.I)
+
+
+def sm_marks(text):
+    """Consumable brands/grades named in the card, in order of appearance."""
+    t = text or ""
+    found = []
+    for rx in (_SM_LATIN_RE, _SM_CYR_RE):
+        for m in rx.finditer(t):
+            tok = m.group(1).strip(" .,;")
+            if _SM_NOT_MARK.search(tok):
+                continue
+            if rx is _SM_LATIN_RE and not (re.search(r"\d", tok) or " " in tok):
+                continue
+            found.append((m.start(), tok))
+    out = []
+    for _, tok in sorted(found):
+        if not any(tok in o or o in tok for o in out):
+            out.append(tok)
+    return out
+
+
 def parse_detail(html, row):
-    """Generic card parser (UNVERIFIED layout — gotcha #6): every
-    "Label: value" line and every 2-cell table row, plus full_text."""
+    """Parse a detail card (layout verified on live cards 2026-10-09).
+
+    Card = header table (Организация, Название технологии — with Шифр and
+    Дата утверждения inside, Способ сварки, Группы ТУ) + «Параметры /
+    Область распространения» table (one row per parameter; several value
+    columns when the scope has several sub-ranges) + notes block.
+    NB: the second table has unclosed <tr> tags, so html.parser nests
+    rows — always read cells with recursive=False.
+
+    Adds: tech_name, tech_shifr, tech_date, params {label: "v1 / v2"},
+    sm_text, sm_marks, osn_materialy_card, notes, full_text, detail_available
+    (False when the site answers «Информация об области аттестации …
+    недоступна» — happens for some older certificates)."""
     rec = dict(row)
+    rec.update(tech_name="", tech_shifr="", tech_date="", params={}, sm_text="",
+               sm_marks=[], osn_materialy_card="", notes="", header={}, detail_available=bool(html))
+    if html and "недоступна" in html and "Информация об области аттестации" in html:
+        # Реальный ответ сайта для части старых свидетельств: «Информация об
+        # области аттестации … недоступна. Обратитесь по телефону …»
+        rec["detail_available"] = False
+        html = None
     if not html:
-        rec.update(detail_fields={}, detail_text="", full_text=row.get("osn_materialy", ""))
+        rec["full_text"] = row.get("osn_materialy", "")
         return rec
     soup = BeautifulSoup(html, "html.parser")
-    text = soup.get_text("\n", strip=True)
-    fields = {}
-    for tr in soup.find_all("tr"):
-        cells = [c.get_text(" ", strip=True) for c in tr.find_all(["td", "th"])]
-        if len(cells) == 2 and cells[0] and len(cells[0]) < 80:
-            fields.setdefault(cells[0].rstrip(":"), cells[1])
-    for m in re.finditer(r"^([А-ЯЁA-Z][^:\n]{2,60}):\s*(.+)$", text, re.M):
-        fields.setdefault(m.group(1).strip(), m.group(2).strip())
-    rec["detail_fields"] = fields
-    rec["detail_text"] = text
-    rec["full_text"] = " | ".join(filter(None, [row.get("osn_materialy", ""), text]))
+    tables = soup.find_all("table")
+
+    header = {}
+    if tables:
+        for tr in tables[0].find_all("tr"):
+            tds = tr.find_all("td", recursive=False)
+            if len(tds) >= 2:
+                header[_txt(tds[0]).rstrip(":")] = _txt(tds[1])
+    rec["header"] = header
+    name = header.get("Название технологии", "")
+    # шифр может содержать запятую ("ТИ-РД-НГДО-1,3-2021") — режем по ", Дата утверждения"
+    m = re.search(r"Шифр:\s*(.+?)(?:,\s*Дата утверждения:\s*(\d{2}\.\d{2}\.\d{4}))?\s*(?:г\.\s*)*$", name)
+    rec["tech_name"] = name[:m.start()].rstrip(" .") if m else name
+    rec["tech_shifr"] = m.group(1).strip() if m else ""
+    rec["tech_date"] = (m.group(2) or "").rstrip(".") if m else ""
+
+    params = {}
+    for t in tables[1:]:
+        for tr in t.find_all("tr"):
+            tds = tr.find_all("td", recursive=False)
+            if not tds:
+                continue
+            label = _txt(tds[0]).replace(" | ", " ").rstrip(":")
+            if not label or label == "Параметры":
+                continue
+            vals = []
+            for v in (_txt(c) for c in tds[1:]):
+                if v and v not in vals:
+                    vals.append(v)
+            params.setdefault(label, " / ".join(vals))
+    rec["params"] = params
+    rec["sm_text"] = params.get("Сварочные (наплавочные) материалы", "")
+    rec["sm_marks"] = sm_marks(rec["sm_text"])
+    rec["osn_materialy_card"] = params.get("Группы и марки основных материалов", "")
+
+    note = soup.find("div", class_="modal-note")
+    rec["notes"] = _txt(note) if note else ""
+    rec["full_text"] = " | ".join(filter(None, [
+        rec["osn_materialy_card"] or row.get("osn_materialy", ""), rec["sm_text"],
+        rec["tech_name"], rec["notes"]]))
     return rec
 
 

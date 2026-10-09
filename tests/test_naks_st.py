@@ -36,6 +36,50 @@ def test_groups_and_high_strength():
                                grade_matcher=lambda t: "S690" in t)
 
 
+def test_groups_real_formats():
+    """Формы «Основных материалов», встреченные в живом реестре 09.10.2026."""
+    cases = {
+        "Группа 1, марки согласно ПТД": [1],
+        "Группа 30 (ПЭ 80, ПЭ 100)": [30],
+        "1 (Ст3кп, Ст3пс, 10, 15, 20, 15К, 09Г2С и др), 9 (12Х18Н10Т)": [1, 9],
+        "1- 09Г2С и другие +3-30ХГСА и другие": [1, 3],
+        "1-14ХГНДЦ, 2-14ХГНДЦ": [1, 2],
+        "1-09Г2С, 15ХСНД, 2-10ХСНД, 1-14ХГНДЦ (345), 2-14ХГНДЦ (390)": [1, 2],
+        "3(М03), 1+3 (М01 + М03) - 09Г2С + С590, S690, W700": [1, 3],
+        "1 – 20, 09Г2С, 20ГЛ, 2 – 10ХСНД, 10Г2ФБЮ, 1+2 – 20, 09Г2С": [1, 2],
+        "Стальные трубы, СДТ, ТПА группы 3(М03) класса прочности К65": [3],
+        "07Х16Н6": [],
+    }
+    for text, exp in cases.items():
+        assert st.base_metal_groups(text) == exp, (text, st.base_metal_groups(text))
+
+
+def test_sm_marks_real_formats():
+    m = st.sm_marks
+    assert m("… слоев шва электроды LB-52U и другие аттестованные … ПТД.") == ["LB-52U"]
+    assert m("Проволока: AKEM4. Флюс: OK Flux 10.62P") == ["AKEM4", "OK Flux 10.62P"]
+    assert m("ULTRA 700") == ["ULTRA 700"]
+    assert m("… покрытия марки Nittetsu L-74S и другие аналоги в соответствии с ПТД") == ["Nittetsu L-74S"]
+    assert m("типа Э50А марок LB-52U, ОК 53.70 и другие аналоги согласно ПТД") == ["LB-52U", "ОК 53.70"]
+    assert m("Сварочная проволока: Св-08Г2С-О и другие") == ["Св-08Г2С-О"]
+
+
+def _fx(name):
+    return open(os.path.join(ROOT, "tests", "fixtures", name), encoding="utf-8").read()
+
+
+def test_parse_real_detail_cards():
+    r = st.parse_detail(_fx("naks_st_detail_acst1_05705.html"), {"osn_materialy": "1 (До К54 вкл.)"})
+    assert r["detail_available"] and r["tech_shifr"] == "ТИ-РД-НГДО-1,3-2021"
+    assert r["tech_date"] == "11.01.2021" and r["sm_marks"] == ["LB-52U"]
+    assert r["params"]["Диапазон диаметров, мм"] == "от 57 до 150 вкл. / св. 150 до 426 вкл."
+    assert r["params"]["Наличие подогрева"] == "с подогревом"
+    hs = st.parse_detail(_fx("naks_st_detail_acst69_03538_s690.html"), {})
+    assert "S690" in hs["osn_materialy_card"] and hs["sm_marks"] == ["AKEM4", "OK Flux 10.62P"]
+    na = st.parse_detail(_fx("naks_st_detail_unavailable.html"), {"osn_materialy": "x"})
+    assert na["detail_available"] is False and na["params"] == {}
+
+
 def test_verification_url_is_cp1251():
     assert "%C0%D6%D1%D2-1-05705" in st.verification_url("АЦСТ-1-05705")
 

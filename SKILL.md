@@ -135,18 +135,25 @@ form 2026-10-09). Read its module docstring first. Key differences:
 - List endpoint `/ast/reestrattst2/index.php`; 163 centres in `AC_MAP`
   (АЦСТ-1…163); extra filters `section` (Производственные/Исследовательские),
   `osn_materialy` (substring of «Основные материалы»), `gazprom=True`.
-- **A single AC already hits the 500 cap** — `collect_rows()` shards by AC
-  *and* bisects the validity-date range until every leaf is < 500.
+- **A single AC already hits the 500 cap** — `collect_rows()` bisects the
+  validity-date range until every leaf is < 500 (live-checked: АЦСТ-1 →
+  1457 rows, all leaves matched the site's counts). Full walks are slow;
+  for high-strength work use `collect_high_strength()` (targeted
+  «Основные материалы» queries `HS_QUERIES` + `is_high_strength()`).
 - The list row already carries «Основные материалы» with group numbers and
   steel grades → `row["groups"]` (via `base_metal_groups()`).
   **High-strength steels = group 3 ОМ** (`HIGH_STRENGTH_GROUP`);
   `is_high_strength(row, grade_matcher)` also accepts an explicit grade
   match, because applicants sometimes file a high-strength grade elsewhere.
-- Detail card («Область распространения») parsing is **not yet verified**
-  against live markup (gotcha #6) — inspect one real card on first direct run.
+- Detail card («Область распространения», `fetch_detail` + `parse_detail`)
+  verified on live cards: technology name/шифр/date, every scope parameter
+  (thickness, diameters, positions, preheat…), and **the consumables the
+  plant qualified with** (`sm_text`, `sm_marks`, e.g. AKEM4 + OK Flux 10.62P
+  for S690). Some old certificates answer «информация … недоступна» →
+  `detail_available=False`.
 - Worked example: `example_st_task.py` (active high-strength technologies →
-  Excel). Offline tests: `python3 tests/test_naks_st.py` (real list-page
-  fixture + simulated cap/bisection).
+  Excel). Offline tests: `python3 tests/test_naks_st.py` (real list page and
+  detail cards as fixtures, real base-material formats, simulated cap).
 
 ## Known limitation / scope
 

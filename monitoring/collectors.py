@@ -182,33 +182,32 @@ def naks_delta(known_svid, shifr_list, log=print):
 
 def naks_st_delta(known_svid, grade_matcher, log=print):
     """Новые действующие свидетельства о готовности к применению технологий
-    сварки ВЫСОКОПРОЧНЫХ сталей (группа 3 ОМ или высокопрочная марка в тексте).
+    сварки ВЫСОКОПРОЧНЫХ сталей (группа 3 ОМ / М03 или марка σт ≥ 420).
     Предприятие, аттестовавшее такую технологию, уже варит эти стали —
-    это самый «тёплый» лид на СМ. Первый прогон только фиксирует базу."""
+    самый «тёплый» лид на СМ. Карточка даёт марки СМ, на которых оно варит
+    сейчас (чьи материалы вытеснять). Первый прогон только фиксирует базу."""
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     import naks_st_lib as st
 
-    today = dt.date.today().strftime("%d.%m.%Y")
-    rows = st.collect_rows(st.build_filter_params(date_active_from=today,
-                                                  date_active_to="31.12.2099"), log=log)
-    current, out = set(), []
-    for r in rows.values():
-        if r["cancelled"]:
+    rows = st.collect_high_strength(grade_matcher=grade_matcher, log=log)
+    current, out = set(rows), []
+    for k, r in rows.items():
+        if not known_svid or k in known_svid:
             continue
-        current.add(r["svid_num"])
-        if not known_svid or r["svid_num"] in known_svid:
-            continue
-        if not st.is_high_strength(r, grade_matcher):
-            continue
+        d = st.parse_detail(st.fetch_detail(r), r)
+        time.sleep(0.25)
+        sm = ", ".join(d["sm_marks"]) or d["sm_text"][:120] or "не указаны"
         out.append({
             "source": "НАКС реестр технологий (АЦСТ)", "source_type": "naks_st",
             "url": st.verification_url(r["svid_num"]),
-            "title": f"Аттестация технологии: {r['organization']} — {r['sposoby']}, "
-                     f"ОМ гр. {','.join(map(str, r['groups'])) or '?'} (св. {r['svid_num']})",
+            "title": f"Аттестация технологии ВП стали: {r['organization']} — {r['sposoby']} "
+                     f"(св. {r['svid_num']}); СМ: {sm}",
             "text": f"НАКС аттестация технологии сварки. Основные материалы: {r['osn_materialy']}. "
-                    f"Способы: {r['sposoby']}. Группы ТУ: {r['gruppy']}. Высокопрочная сталь.",
+                    f"Способы: {r['sposoby']}. Группы ТУ: {r['gruppy']}. СМ: {d['sm_text']}. "
+                    f"Толщины: {d['params'].get('Диапазон толщин, мм', '')}. Высокопрочная сталь.",
             "date": dt.date.today().isoformat(), "org": r["organization"],
-            "action": "Предприятие аттестовало технологию сварки высокопрочной стали: "
-                      "выйти к главному сварщику с СМ под эту марку/группу",
+            "comment": f"Основание: {r.get('_hs_reason', '')}. Технология {d['tech_shifr']} {d['tech_date']}",
+            "action": f"Выйти к главному сварщику: сейчас варит на {sm} — предложить замену/альтернативу "
+                      f"под {r['osn_materialy'][:80]}",
         })
     return out, current
