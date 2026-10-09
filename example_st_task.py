@@ -28,7 +28,9 @@ from classify import classify  # noqa: E402  (словарь марок мони
 
 
 def grade_matcher(text):
-    c = classify(text)
+    # префикс даёт классификатору контекст «сталь» — в реестре его нет, а без
+    # него голые марки (К56, С440, S460) отбрасываются как шум
+    c = classify("сталь: " + text)
     return bool(c and (c["max_class"] or 0) >= 420)
 
 

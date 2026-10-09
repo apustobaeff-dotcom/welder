@@ -101,7 +101,7 @@ def main():
         st_all = {}
 
         def hs(text):
-            c = classify.classify(text)
+            c = classify.classify("сталь: " + text)   # контекст для голых марок из реестра
             return bool(c and (c["max_class"] or 0) >= 420)
 
         def naks_st_run():
