@@ -472,7 +472,22 @@ _SM_LATIN_RE = re.compile(
 _SM_CYR_RE = re.compile(
     r"(?<![\w-])((?:Св|УОНИ|ОЗС|АНО|МР|ЦЛ|ЦУ|ТМУ|ОК|ЛБ|ЭА|ТМЛ|ЦТ|ОЗЛ|НИАТ|ПП|ПГ)"
     r"[\s-]?\d[\w.\-/]*|Св-[\wА-Яа-я.\-/]+|ОК\s\d+\.\d+)")
-_SM_NOT_MARK = re.compile(r"^(?:ПТД|НД|ГОСТ|ТУ|СТО|ISO|AWS|EN|DIN|РД|СП|ВСН)\b|^Э\d", re.I)
+_SM_NOT_MARK = re.compile(
+    r"^(?:ПТД|НД|ГОСТ|ТУ|СТО|ISO|AWS|EN|DIN|РД|СП|ВСН)\b|^Э\d|^(?:CO2|СО2|Ar|M2[0-4]|C1)\b", re.I)  # газы — не марки
+
+
+_LOOKALIKE = str.maketrans("АВЕКМНОРСТХ", "ABEKMHOPCTX")
+
+
+def normalize_mark(tok):
+    """Одна марка — одно написание: «ОК 53.70» (кириллица) -> «OK 53.70»,
+    «УОНИ 13/55» -> «УОНИ-13/55», «Св-08Г2С» без изменений."""
+    tok = re.sub(r"\s+", " ", tok.strip())
+    if re.match(r"^[ОО][КK]\s", tok) or re.match(r"^[A-ZА-Я]{2}\s\d", tok) and tok[:2] in ("ОК", "ОK", "OК"):
+        tok = tok[:2].translate(_LOOKALIKE) + tok[2:]
+    tok = re.sub(r"^[ОO][КK]\s?(\d)", r"OK \1", tok)
+    tok = re.sub(r"^УОНИ[\s-]*(\d)", r"УОНИ-\1", tok, flags=re.I)
+    return tok
 
 
 def sm_marks(text):
@@ -489,6 +504,7 @@ def sm_marks(text):
             found.append((m.start(), tok))
     out = []
     for _, tok in sorted(found):
+        tok = normalize_mark(tok)
         if not any(tok in o or o in tok for o in out):
             out.append(tok)
     return out
