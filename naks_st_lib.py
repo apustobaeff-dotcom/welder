@@ -146,8 +146,19 @@ def is_high_strength(row, grade_matcher=None):
     return bool(grade_matcher and grade_matcher(row.get("osn_materialy", "")))
 
 
-def get(url, params=None, tries=4):
-    return _sm.get(url, params=params, tries=tries)
+def get(url, params=None, tries=7):
+    """naks_sm_lib.get() + длинный экспоненциальный backoff. На длинных
+    обходах (сотни запросов подряд) naks.ru периодически рвёт соединение
+    («Connection reset by peer», живой прогон 09.10.2026); короткие повторы
+    внутри naks_sm_lib.get() этого не переживают."""
+    last = None
+    for i in range(tries):
+        try:
+            return _sm.get(url, params=params, tries=2)
+        except Exception as e:  # noqa: BLE001 — сетевые ошибки requests
+            last = e
+            time.sleep(min(90, 5 * 2 ** i))
+    raise last
 
 
 def build_filter_params(
@@ -385,16 +396,34 @@ HS_QUERIES = [
 
 
 def collect_high_strength(date_from=None, date_to="31.12.2099", grade_matcher=None,
-                          queries=HS_QUERIES, log=None, sleep=0.2):
+                          queries=HS_QUERIES, log=None, sleep=0.3, cache_path=None):
     """Active, non-cancelled certificates for high-strength steels:
     union of site-level HS_QUERIES, then is_high_strength() on each row.
+    cache_path: JSON-файл, куда после каждого запроса пишется результат —
+    повторный запуск после обрыва продолжает с недоделанного запроса.
     Returns {svid_num: row} with row["_hs_reason"]."""
     import datetime as _dt
+    import json as _json
+    import os as _os
     date_from = date_from or _dt.date.today().strftime("%d.%m.%Y")
+    cache = {}
+    if cache_path and _os.path.exists(cache_path):
+        with open(cache_path, encoding="utf-8") as f:
+            cache = _json.load(f)
+        if cache.get("_date_from") != date_from:
+            cache = {}
+    cache["_date_from"] = date_from
     pool = {}
     for q in queries:
-        got = collect_rows(build_filter_params(osn_materialy=q, date_active_from=date_from,
-                                               date_active_to=date_to), log=log, sleep=sleep)
+        if q in cache:
+            got = cache[q]
+        else:
+            got = collect_rows(build_filter_params(osn_materialy=q, date_active_from=date_from,
+                                                   date_active_to=date_to), log=log, sleep=sleep)
+            if cache_path:
+                cache[q] = got
+                with open(cache_path, "w", encoding="utf-8") as f:
+                    _json.dump(cache, f, ensure_ascii=False)
         if log:
             log(f"query {q!r}: {len(got)}")
         pool.update(got)
