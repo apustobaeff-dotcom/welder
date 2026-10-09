@@ -1,0 +1,131 @@
+[
+ {
+  "source": "web:instagram.com",
+  "source_type": "social",
+  "url": "https://www.instagram.com/p/Dd8o-FXsPT2/",
+  "title": "ММК представит продукцию на «ИННОПРОМ. Беларусь»: акцент на высокопрочные и износостойкие стали MAGSTRONG",
+  "text": "Особый акцент ММК делает на линейке высокопрочных и износостойких сталей MAGSTRONG — эта импортозамещающая продукция особенно актуальна для белорусских машиностроителей",
+  "date": "2026-10-01",
+  "org": "ММК",
+  "action": "Белорусские машиностроители (БелАЗ, МАЗ, Амкодор) переходят на MAGSTRONG: предложить СМ в паре с прокатом ММК",
+  "comment": "Дата публикации приблизительная (по выдаче поиска)",
+  "cls": {
+   "steels": [
+    {
+     "name": "MAGSTRONG",
+     "class": 550,
+     "note": "ММК, класс уточнять по марке"
+    }
+   ],
+   "consumables": [],
+   "generic_hs": false,
+   "max_class": 550,
+   "industries": [],
+   "signal_types": [
+    "запуск/освоение"
+   ],
+   "sm_brands": [],
+   "score": 5,
+   "retail": false,
+   "priority": "B"
+  },
+  "key": "8e761312a95cbb97"
+ },
+ {
+  "source": "web:stroymat.ru",
+  "source_type": "web",
+  "url": "https://stroymat.ru/2026/09/23/severstal-mostovaya-stal-c460/",
+  "title": "«Северсталь»: мостовая сталь С460 оптимизирует сметы мостов и путепроводов",
+  "text": "Применение высокопрочного проката С460 позволит снизить затраты на стальные конструкции пролётных строений мостов и путепроводов на 11%.",
+  "date": "2026-09-23",
+  "org": "Северсталь",
+  "action": "Выйти на мостовые заводы (изготовители пролётных строений) под С460: подбор СМ класса G 46 / ER80S, аттестация технологии НАКС",
+  "comment": "Новая марка для мостостроения: под неё потребуются аттестованные технологии и СМ на σт ≥ 460",
+  "cls": {
+   "steels": [
+    {
+     "name": "С460",
+     "class": 460,
+     "note": "ГОСТ 27772 / ТУ"
+    }
+   ],
+   "consumables": [],
+   "generic_hs": true,
+   "max_class": 460,
+   "industries": [
+    "мосты"
+   ],
+   "signal_types": [
+    "запуск/освоение"
+   ],
+   "sm_brands": [],
+   "score": 5,
+   "retail": false,
+   "priority": "B"
+  },
+  "key": "f7da0e454a433b52"
+ },
+ {
+  "source": "web:svarbi.ru",
+  "source_type": "web",
+  "url": "https://rostov.svarochnie-apparati.ru/catalog/provoloka-dlya-svarki-uglerodistykh-stalej/provoloka-polirovan-barsveld-er110s-g-f-12-mm-kasseta-15-kg",
+  "title": "Цена рынка: БАРСВЕЛД ER110S-G ⌀1,2 — 600–750 руб/кг в рознице",
+  "text": "Проволока омедненная БАРСВЕЛД ER-110S-G 1,2 мм кассета 15 кг 750 руб -20% 600 руб/кг, сварка высокопрочных сталей",
+  "date": "2026-10-09",
+  "org": "БАРСВЕЛД",
+  "action": "Ценовой ориентир конкурента для КП",
+  "comment": "Конкурентная цена, не лид",
+  "cls": {
+   "steels": [],
+   "consumables": [
+    {
+     "name": "ER110S-G",
+     "class": 690,
+     "note": "AWS A5.28 проволока"
+    },
+    {
+     "name": "ER-110S-G",
+     "class": 690,
+     "note": "AWS A5.28 проволока"
+    }
+   ],
+   "generic_hs": true,
+   "max_class": 690,
+   "industries": [],
+   "signal_types": [],
+   "sm_brands": [
+    "БАРСВЕЛД"
+   ],
+   "score": 7,
+   "retail": true,
+   "priority": "C"
+  },
+  "key": "54aba1ed8eda054e"
+ },
+ {
+  "source": "web:instagram.com",
+  "source_type": "social",
+  "url": "https://www.instagram.com/reel/DeBG4Q9oEhg/",
+  "title": "Металлообработка (@temirtechpro): кран-балки из высокопрочной стали",
+  "text": "Изготовление из высокопрочной стали, качественная сварка, точная геометрия и обязательные статические и динамические испытания. Изготавливаем кран-балки",
+  "date": "2026-10-03",
+  "org": "temirtechpro",
+  "action": "Малый изготовитель ПТО; установить юрлицо и регион перед контактом",
+  "comment": "Марка стали не названа: лид низкой определённости",
+  "cls": {
+   "steels": [],
+   "consumables": [],
+   "generic_hs": true,
+   "max_class": null,
+   "industries": [
+    "краны/ПТО"
+   ],
+   "signal_types": [],
+   "sm_brands": [],
+   "score": 2,
+   "retail": false,
+   "priority": "C"
+  },
+  "key": "e764f3b2eeb6f33b"
+ }
+]
