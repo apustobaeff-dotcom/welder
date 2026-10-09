@@ -96,7 +96,11 @@ def test_bisect_beats_cap(monkeypatch=None):
         dd, mm, yy = map(int, d.split("."))
         return dt.date(yy, mm, dd)
 
+    calls = {"ac": 0}
+
     def fake_get(url, params=None, tries=4):
+        if "arrFilter_pf[num_acst][0]" in params:
+            calls["ac"] += 1
         lo = ordv(params.get("arrFilter_DATE_ACTIVE_TO_1", "01.01.2000"))
         hi = ordv(params.get("arrFilter_DATE_ACTIVE_TO_2", "31.12.2099"))
         sel = [r for r in recs if lo <= ordv(r[1]) <= hi]
@@ -120,6 +124,9 @@ def test_bisect_beats_cap(monkeypatch=None):
         st.get = orig
     assert len(rows) == 1300
     assert all(r["groups"] == [3] for r in rows.values())
+    # бисекция по датам без перебора 163 АЦ (дубль старого collect_rows
+    # однажды тихо вернул медленный путь — 30 минут без результата)
+    assert calls["ac"] == 0, calls
 
 
 if __name__ == "__main__":
