@@ -128,6 +128,8 @@ def main():
         c = classify.classify(f"{it.get('title', '')}\n{it.get('text', '')}")
         if not c:
             continue
+        if it.get("source_type") == "naks_st":
+            c["priority"] = "A"   # предприятие уже аттестовало сварку ВП стали — сильнейший лид
         seen_now.add(k)
         it["cls"], it["key"] = c, k
         items.append(it)
