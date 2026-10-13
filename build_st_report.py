@@ -31,16 +31,24 @@ import naks_st_lib as st  # noqa: E402
 from classify import classify  # noqa: E402
 
 
+# Группы технических устройств НАКС -> отрасль (для фильтра и колонки «Отрасль»)
+SECTOR = {
+    "ПТО": "Краны / ПТО", "ГДО": "Горнодобывающее", "МО": "Металлургическое",
+    "ОТОГ": "Транспорт опасных грузов", "СК": "Строительные МК", "КСМ": "Мосты",
+    "КО": "Котлы", "ОХНВП": "Хим./нефтехим. оборудование", "ГО": "Газовое", "НГДО": "НГДО (трубопроводы)",
+}
+
+
 def grade_matcher(text):
     c = classify("сталь: " + text)
     return bool(c and (c["max_class"] or 0) >= 420)
 
 
-H = ["Организация", "СМ: марки", "СМ: как в карточке", "Основные материалы", "Высокопрочные: основание",
+H = ["Организация", "Отрасль", "СМ: марки", "СМ: как в карточке", "Основные материалы", "Высокопрочные: основание",
      "Способ сварки", "Группы ТУ", "Толщины, мм", "Диаметры, мм", "Подогрев", "Термообработка", "Положения",
      "Технология: шифр, дата", "Технология: название", "№ свидетельства", "Вид аттестации", "Действует до",
      "АЦСТ", "Карточка", "Проверить на naks.ru"]
-W = [38, 28, 50, 45, 18, 12, 12, 26, 22, 16, 16, 18, 24, 50, 16, 8, 12, 10, 14, 14]
+W = [38, 22, 28, 50, 45, 18, 12, 12, 26, 22, 16, 16, 18, 24, 50, 16, 8, 12, 10, 14, 14]
 
 
 def _sheet(ws, headers, rows, widths, link_col=None):
@@ -68,6 +76,7 @@ def main():
     ap.add_argument("--pool", required=True)
     ap.add_argument("--details", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--groups", nargs="*", help="оставить только эти группы ТУ (напр. ПТО СК КСМ МО ГДО)")
     a = ap.parse_args()
 
     raw = json.load(open(a.pool, encoding="utf-8"))
@@ -80,6 +89,10 @@ def main():
         if g or m:
             r["_hs_reason"] = " + ".join(filter(None, ["группа 3 (М03)" if g else "", "марка σт≥420" if m else ""]))
             hs[k] = r
+    split = lambda s: {x.strip() for x in s.split(",") if x.strip()}  # noqa: E731
+    if a.groups:
+        keep = set(a.groups)
+        hs = {k: r for k, r in hs.items() if split(r["gruppy"]) & keep}
     det = json.load(open(a.details, encoding="utf-8")) if os.path.exists(a.details) else {}
     for x in det.values():                       # пере-извлечь марки текущей версией разбора
         x["sm_marks"] = st.sm_marks(x.get("sm_text", ""))
@@ -87,9 +100,12 @@ def main():
     def p(k, f):
         return det.get(k, {}).get("params", {}).get(f, "")
 
+    def sector(r):
+        return ", ".join(dict.fromkeys(SECTOR.get(g, g) for g in sorted(split(r["gruppy"]))))
+
     def row(k):
         r, x = hs[k], det.get(k, {})
-        return [r["organization"], ", ".join(x.get("sm_marks", [])), x.get("sm_text", ""),
+        return [r["organization"], sector(r), ", ".join(x.get("sm_marks", [])), x.get("sm_text", ""),
                 x.get("osn_materialy_card") or r["osn_materialy"], r["_hs_reason"], r["sposoby"], r["gruppy"],
                 p(k, "Диапазон толщин, мм"), p(k, "Диапазон диаметров, мм"), p(k, "Наличие подогрева"),
                 p(k, "Наличие термообработки"), p(k, "Положение при сварке (наплавке)"),
@@ -103,15 +119,15 @@ def main():
     by_org = collections.defaultdict(list)
     for k in hs:
         by_org[hs[k]["organization"]].append(k)
-    split = lambda s: {x.strip() for x in s.split(",") if x.strip()}  # noqa: E731
     org_rows = []
     for o, ks in by_org.items():
         marks = collections.Counter(m for k in ks for m in det.get(k, {}).get("sm_marks", []))
-        org_rows.append([o, len(ks), sum(1 for k in ks if k in det), ", ".join(m for m, _ in marks.most_common(8)),
+        groups = sorted(set().union(*(split(hs[k]["gruppy"]) for k in ks)))
+        org_rows.append([o, ", ".join(SECTOR.get(g, g) for g in groups), len(ks), sum(1 for k in ks if k in det), ", ".join(m for m, _ in marks.most_common(8)),
                          ", ".join(sorted(set().union(*(split(hs[k]["sposoby"]) for k in ks)))),
                          ", ".join(sorted(set().union(*(split(hs[k]["gruppy"]) for k in ks)))),
                          "; ".join(sorted({hs[k]["osn_materialy"][:60] for k in ks}))[:300]])
-    org_rows.sort(key=lambda r: (-r[2], -r[1]))
+    org_rows.sort(key=lambda r: (-r[3], -r[2]))
     mk = collections.defaultdict(lambda: [0, set(), set()])
     for k in ready:
         for m in det[k]["sm_marks"]:
@@ -130,6 +146,7 @@ def main():
                    "технологий сварки (naks.ru/registry/reg/st/)"),
         ("Дата отчёта", dt.date.today().strftime("%d.%m.%Y")),
         ("Критерий", "действующие, не аннулированные; группа 3 ОМ (М03) или марка с σт ≥ 420 МПа"),
+        ("Отрасли (группы ТУ)", ", ".join(f"{g} — {SECTOR.get(g, g)}" for g in a.groups) if a.groups else "все"),
         ("Свидетельств по ВП сталям", len(hs)), ("Организаций", len(by_org)),
         ("Карточек загружено", len(det)), ("  из них с данными", len(ready)), ("  недоступна на сайте", nd),
         ("Лист «Карточки»", "свидетельства с загруженной карточкой: марки СМ, толщины, подогрев, технология"),
@@ -142,14 +159,14 @@ def main():
     ws.column_dimensions["A"].width, ws.column_dimensions["B"].width = 30, 110
     for c in ws["A"]:
         c.font = Font(bold=True)
-    _sheet(wb.create_sheet("Карточки"), H, [row(k) for k in ready], W, link_col=20)
+    _sheet(wb.create_sheet("Карточки"), H, [row(k) for k in ready], W, link_col=21)
     _sheet(wb.create_sheet("Марки СМ"), ["Марка СМ", "Свидетельств", "Организаций", "Группы ТУ", "Организации"],
            mk_rows, [30, 12, 12, 26, 100])
-    _sheet(wb.create_sheet("Организации"), ["Организация", "Свидетельств ВП", "Карточек загружено",
+    _sheet(wb.create_sheet("Организации"), ["Организация", "Отрасль", "Свидетельств ВП", "Карточек загружено",
                                            "Марки СМ (по загруженным)", "Способы", "Группы ТУ",
-                                           "Основные материалы (примеры)"], org_rows, [45, 12, 12, 40, 24, 18, 80])
+                                           "Основные материалы (примеры)"], org_rows, [45, 26, 12, 12, 40, 24, 18, 80])
     _sheet(wb.create_sheet("Все свидетельства"), H,
-           [row(k) for k in sorted(hs, key=lambda k: (hs[k]["organization"], k))], W, link_col=20)
+           [row(k) for k in sorted(hs, key=lambda k: (hs[k]["organization"], k))], W, link_col=21)
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     wb.save(a.out)
     print(f"{a.out}: свидетельств {len(hs)}, организаций {len(by_org)}, карточек с данными {len(ready)}, "
