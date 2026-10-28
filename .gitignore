@@ -1,2 +1,10 @@
 __pycache__/
 *.pyc
+
+# brag video intermediates
+brag-output/work/frames/
+brag-output/work/stills/
+brag-output/work/*.wav
+brag-output/work/*.jpg
+brag-output/work/*.png
+brag-output/work/anim.html

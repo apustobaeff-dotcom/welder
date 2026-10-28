@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><title>АРКУС · СВАРКА-2026 — видео</title>
+<style>
+@font-face{font-family:"Montserrat";font-weight:100 900;src:url(__IMG_f_mont_lat__) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Montserrat";font-weight:100 900;src:url(__IMG_f_mont_cyr__) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Assistant";font-weight:200 800;src:url(__IMG_f_asst__) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"PT Sans";font-weight:400;src:url(__IMG_f_pt4__) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"PT Sans";font-weight:700;src:url(__IMG_f_pt7__) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+:root{
+  --ink-900:#0d0d0d;--ink-800:#1a1a1a;--charcoal:#363636;--metal-300:#ddd;--steel-500:#8c8c8c;
+  --gold-500:#f3cb73;--gold-600:#e0b352;--gold-200:#f8e2ad;--gold-700:#8a6a1f;
+  --red-500:#98002e;--red-600:#7a0025;--red-100:#f3d3db;
+  --ivory-100:#faf9f5;--ivory-200:#f0eee6;--ivory-300:#e8e5da;--warm-border:#ded9cc;
+  --ink-w9:#191917;--ink-w7:#3c3a34;--ink-w5:#6b665c;--ink-w4:#8c887d;
+  --fd:"Montserrat",sans-serif;--fb:"Assistant","PT Sans",sans-serif;
+  --metal-img:url(__IMG_metal__);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#000}
+body{font-family:var(--fb);color:var(--ink-w7);-webkit-font-smoothing:antialiased}
+#stage{position:relative;width:1920px;height:1080px;overflow:hidden;background:#000}
+.scene{position:absolute;inset:0;display:none;overflow:hidden}
+.scene.on{display:block}
+.bg{position:absolute;inset:-40px}
+.metal .bg{background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 30%,rgba(0,0,0,.6) 100%),var(--metal-img) center/cover;background-color:var(--ink-900)}
+.ivory .bg{background:var(--ivory-200)}
+.ivory.alt .bg{background:var(--ivory-100)}
+.cam{position:absolute;inset:0;transform-origin:50% 50%}
+.pad{position:absolute;left:140px;right:140px;top:90px;bottom:90px;display:flex;flex-direction:column;justify-content:center}
+canvas.sparks{position:absolute;inset:0;pointer-events:none}
+
+.over{font-weight:700;font-size:20px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold-700)}
+.metal .over{color:var(--gold-500)}
+.h2{font-family:var(--fd);font-weight:800;font-size:64px;line-height:1.08;color:var(--ink-w9);letter-spacing:-.01em;margin-top:14px}
+.metal .h2{color:var(--gold-500)}
+.h2 em{font-style:normal;color:var(--red-500)}
+.metal .h2 em{color:#fff}
+.rule{width:120px;height:4px;background:var(--gold-500);border-radius:2px;margin-top:28px}
+.lead{font-size:28px;color:var(--ink-w5);margin-top:20px}
+.metal .lead{color:var(--metal-300)}
+.card{background:#fff;border:2px solid var(--gold-600);border-radius:12px;box-shadow:0 1px 2px rgba(25,25,23,.06),0 14px 34px -16px rgba(25,25,23,.28)}
+.metal .card{background:rgba(26,26,26,.9);border-color:var(--gold-500);box-shadow:0 8px 24px rgba(0,0,0,.55)}
+.plate{width:72px;height:72px;flex:none;border-radius:12px;background:var(--gold-500);color:#000;font-family:var(--fd);font-weight:800;font-size:32px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.4)}
+.mplate{background-color:var(--ink-900);background-image:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 30%,rgba(0,0,0,.55) 100%),var(--metal-img);background-size:100% 100%,cover}
+.frame{position:absolute;inset:36px;border:2px solid rgba(243,203,115,.45);border-radius:4px}
+.frame i{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--gold-500);box-shadow:0 3px 8px rgba(0,0,0,.5)}
+.frame i:nth-child(1){top:-7px;left:-7px}.frame i:nth-child(2){top:-7px;right:-7px}.frame i:nth-child(3){bottom:-7px;left:-7px}.frame i:nth-child(4){bottom:-7px;right:-7px}
+.badge{display:inline-block;font-weight:700;font-size:15px;letter-spacing:.18em;text-transform:uppercase;padding:7px 16px;border-radius:999px;border:2px solid var(--gold-500);color:var(--gold-500)}
+
+/* S1 */
+.s1 .wrap{position:absolute;left:180px;right:180px;top:0;bottom:0;display:flex;align-items:center;gap:80px}
+.s1 .n59{font-family:var(--fd);font-weight:900;font-size:440px;line-height:.8;color:var(--gold-500);letter-spacing:-.05em;width:620px;text-align:right}
+.s1 .txt .big{font-family:var(--fd);font-weight:800;font-size:66px;line-height:1.1;color:#fff;margin-top:18px}
+.s1 .txt .big span{color:var(--gold-500)}
+
+/* S2 */
+.s2 .photo{position:absolute;top:0;right:0;bottom:0;width:56%;background:url(__IMG_hero_bw__) 62% center/cover;-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 40%);opacity:.9}
+.s2 .inner{position:absolute;left:180px;top:200px;width:1080px}
+.s2 h1{font-family:var(--fd);font-weight:900;font-size:108px;line-height:1.02;color:var(--gold-500);letter-spacing:-.01em;margin-top:22px}
+.s2 h1 .w{color:#fff}
+.s2 .meta{display:flex;gap:44px;margin-top:44px;padding-top:26px;border-top:1px solid rgba(243,203,115,.3);width:980px}
+.s2 .meta small{display:block;font-size:15px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--steel-500)}
+.s2 .meta b{font-size:26px;color:#fff}
+
+/* S3 */
+.plants{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;margin-top:46px}
+.plant{overflow:hidden}
+.plant .lg{height:150px;display:flex;align-items:center;justify-content:center;border-bottom:2px solid var(--gold-600)}
+.plant .lg img{max-height:92px;max-width:70%}
+.plant .lg img.inv{filter:brightness(0) invert(1)}
+.plant .b{padding:24px 26px 28px}
+.plant h3{font-family:var(--fd);font-weight:700;font-size:22px;line-height:1.25;color:var(--ink-w9);height:56px}
+.plant .city{font-size:19px;color:var(--ink-w4)}
+.plant .cap{display:flex;align-items:baseline;gap:10px;margin-top:16px}
+.plant .cap b{font-family:var(--fd);font-weight:900;font-size:46px;color:var(--ink-w9)}
+.plant .cap span{font-size:19px;color:var(--ink-w5)}
+.meter{height:9px;background:var(--ivory-300);border-radius:9px;margin-top:12px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--gold-500);width:0}
+.facts{margin-top:28px;border-radius:12px;display:grid;grid-template-columns:1.3fr .8fr 2fr;padding:30px 40px;color:#fff;border:2px solid var(--gold-500)}
+.facts div+div{border-left:1px solid rgba(255,255,255,.18);padding-left:40px}
+.facts b{display:block;font-family:var(--fd);font-weight:900;font-size:54px;line-height:1.05;color:var(--gold-500)}
+.facts b.w{color:#fff;font-size:34px;font-weight:800;padding-top:10px}
+.facts span{font-size:19px;color:var(--metal-300);letter-spacing:.06em}
+.facts b span,.p3 .n span{font-size:inherit!important;color:inherit!important;letter-spacing:inherit}
+
+/* S4 */
+.chain{display:grid;grid-template-columns:repeat(4,1fr);gap:34px;margin-top:80px}
+.st{padding:36px 30px 40px;position:relative;transition:none}
+.st .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}
+.tile{width:68px;height:68px;border-radius:12px;background:var(--ink-800);border:2px solid var(--gold-500);display:flex;align-items:center;justify-content:center}
+.tile svg{width:34px;height:34px;stroke:var(--gold-500);fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.st h3{font-family:var(--fd);font-weight:800;font-size:36px;color:var(--ink-w9)}
+.st p{font-size:22px;color:var(--ink-w5);margin-top:12px;line-height:1.4}
+.st .glow{position:absolute;inset:-2px;border-radius:12px;border:3px solid var(--red-500);opacity:0}
+.chain .arr{position:absolute;top:50%;width:14px;height:14px;border-top:3px solid var(--gold-600);border-right:3px solid var(--gold-600);transform:translateY(-50%) rotate(45deg)}
+
+/* S5 */
+.div02{position:absolute;inset:0;display:flex;align-items:center;gap:80px;padding-left:180px}
+.outline{font-family:var(--fd);font-weight:900;font-size:300px;line-height:.8;color:transparent;-webkit-text-stroke:3px var(--gold-500);letter-spacing:-.04em}
+.road{display:grid;gap:16px;margin-top:40px}
+.rh,.rr{display:grid;grid-template-columns:330px 1fr 70px 1.2fr;gap:22px;align-items:stretch}
+.rh{font-size:16px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-w4)}
+.rr .mk{border-radius:12px;padding:20px 26px}
+.rr .mk b{display:block;font-family:var(--fd);font-weight:800;font-size:28px;color:var(--gold-500)}
+.rr .mk span{font-size:18px;color:var(--metal-300)}
+.rr .was{background:var(--ivory-100);border:1px solid var(--warm-border);border-radius:12px;padding:20px 26px;font-size:22px;color:var(--ink-w5);display:flex;align-items:center}
+.rr .ar{display:flex;align-items:center;justify-content:center}
+.rr .ar svg{width:52px;height:22px;stroke:var(--gold-600);stroke-width:2.5;fill:none}
+.rr .now{display:flex;gap:18px;align-items:center;padding:14px 22px;border-left:7px solid var(--gold-500)}
+.rr .now .plate{width:54px;height:54px}
+.rr .now .plate svg{width:28px;height:28px;stroke:#000;stroke-width:3;fill:none}
+.rr .now b{display:block;font-family:var(--fd);font-size:23px;color:var(--ink-w9)}
+.rr .now span{font-size:17px;color:var(--ink-w5)}
+.callout{margin-top:22px;padding:18px 26px;border-radius:12px;background:rgba(243,203,115,.18);border-left:7px solid var(--gold-500);font-size:22px;color:var(--ink-w7)}
+.callout b{font-family:var(--fd);color:var(--ink-w9)}
+.callout .t{font-family:var(--fd);font-weight:800;font-size:16px;letter-spacing:.18em;color:var(--gold-700);margin-right:18px}
+
+/* S6 */
+.tests{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:40px}
+.test{padding:30px 32px}
+.test .who{font-family:var(--fd);font-weight:800;font-size:30px;color:var(--gold-500)}
+.test .how{font-size:19px;color:var(--steel-500);margin-top:2px}
+.metric{margin-top:22px}
+.metric .top{display:flex;justify-content:space-between;align-items:baseline;font-size:19px;color:var(--metal-300)}
+.metric .top b{font-family:var(--fd);font-weight:900;font-size:40px;color:#fff}
+.gauge{position:relative;height:11px;background:var(--charcoal);border-radius:9px;margin-top:12px}
+.gauge i{position:absolute;left:0;top:0;bottom:0;border-radius:9px;background:var(--gold-500);width:0}
+.gauge u{position:absolute;top:-8px;bottom:-8px;width:3px;background:#fff;text-decoration:none}
+.gauge u::after{content:attr(data-l);position:absolute;top:28px;left:50%;transform:translateX(-50%);font-size:14px;font-weight:700;color:var(--steel-500)}
+.test .chips{display:flex;gap:10px;margin-top:40px}
+.allok{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:22px}
+.allok div{padding:20px 24px}
+.allok b{display:block;font-family:var(--fd);font-weight:900;font-size:32px;color:var(--gold-500)}
+.allok span{font-size:18px;color:var(--metal-300)}
+
+/* S7 */
+.prods{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;margin-top:44px}
+.prod{overflow:hidden}
+.prod .ph{color:var(--gold-500);font-family:var(--fd);font-weight:800;font-size:30px;padding:18px 24px;display:flex;justify-content:space-between;align-items:center}
+.prod .ph .k{background:var(--gold-500);color:#000;font-size:15px;letter-spacing:.14em;padding:5px 12px;border-radius:999px}
+.prod .im{height:250px;display:flex;align-items:center;justify-content:center;background:#fff;border-bottom:1px solid var(--warm-border);overflow:hidden}
+.prod .im img{width:92%}
+.prod .b{padding:22px 24px 26px}
+.prod .kind{font-size:15px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-700)}
+.prod dl{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:20px;margin-top:14px}
+.prod dt{color:var(--ink-w4)}
+.prod dd{color:var(--ink-w9);font-weight:700}
+.prod .cert{margin-top:16px;font-size:17px;color:var(--red-500);font-weight:700}
+
+/* S8 */
+.p3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:30px}
+.p3 .card{padding:20px 26px;display:flex;align-items:center;gap:22px}
+.p3 .n{font-family:var(--fd);font-weight:900;font-size:70px;line-height:1;color:var(--ink-w9)}
+.p3 .n.r{color:var(--red-500)}
+.p3 b{display:block;font-family:var(--fd);font-size:22px;color:var(--ink-w9)}
+.p3 span{font-size:18px;color:var(--ink-w5)}
+.ctrl{display:flex;justify-content:space-between;align-items:center;margin-top:26px}
+.seg{display:inline-flex;gap:4px;padding:5px;border-radius:12px}
+.seg span{font-family:var(--fd);font-weight:700;font-size:18px;color:var(--metal-300);padding:10px 18px;border-radius:8px}
+.seg span.on{background:var(--gold-500);color:#000}
+.tw{margin-top:14px;border-radius:12px;border:2px solid var(--gold-600);background:#fff;overflow:hidden}
+table{border-collapse:collapse;width:100%;font-size:17px}
+th{background:var(--ink-900);color:var(--gold-500);font-family:var(--fd);font-weight:700;font-size:18px;text-align:left;padding:12px 16px}
+th.k70{background:var(--red-500);color:#fff}
+td{padding:10px 16px;border-bottom:1px solid var(--warm-border)}
+tr:last-child td{border-bottom:none}
+td.l b{font-family:var(--fd);font-size:17px;color:var(--ink-w9)}
+td.l span{font-size:14px;color:var(--ink-w4);margin-left:10px}
+td.n{font-family:var(--fd);font-weight:900;font-size:20px;text-align:center;background:var(--ivory-100);width:80px}
+.chip{display:inline-block;padding:3px 10px;border-radius:6px;font-weight:700;font-size:16px;margin:2px 4px 2px 0;white-space:nowrap}
+.chip small{font-weight:400;opacity:.8;margin-left:4px;font-size:14px}
+.chip.s{background:var(--gold-200);color:var(--ink-w9)}
+.chip.z{background:var(--red-100);color:var(--red-600)}
+.dash{color:#cfcabd}
+.cursor{position:absolute;width:40px;height:40px;z-index:20;pointer-events:none}
+.ripple{position:absolute;width:80px;height:80px;border-radius:50%;border:3px solid var(--gold-500);z-index:19}
+
+/* S9 */
+.joint{display:grid;grid-template-columns:540px 1fr;gap:60px;margin-top:40px;align-items:center}
+.jsvg{padding:30px 26px 20px}
+.jsvg text{font-family:var(--fd);font-weight:800}
+.layers{display:grid;gap:14px;margin-top:20px}
+.layer{display:grid;grid-template-columns:120px 1fr;gap:20px;align-items:center;padding:18px 22px;border-radius:12px;background:rgba(26,26,26,.88);border:2px solid rgba(243,203,115,.3)}
+.layer .code{font-family:var(--fd);font-weight:900;font-size:32px;color:var(--gold-500)}
+.layer .code small{display:block;font-family:var(--fb);font-size:15px;font-weight:700;color:var(--steel-500);line-height:1.2}
+.mat{display:inline-block;font-size:21px;font-weight:700;padding:8px 14px;border-radius:8px;background:var(--ink-800);border:1px solid rgba(255,255,255,.14);color:#fff;margin:3px 6px 3px 0}
+.mat em{font-style:normal;font-size:15px;color:var(--gold-500);margin-left:8px}
+.done{margin-top:22px;padding:20px 26px;border-radius:12px;border-left:7px solid var(--gold-500);background:rgba(243,203,115,.12);color:#fff;font-size:22px}
+.done b{display:block;font-family:var(--fd);font-size:30px;color:var(--gold-500);margin-bottom:4px}
+
+/* S10 */
+.sup{display:grid;grid-template-columns:1fr 520px;gap:60px;margin-top:40px;align-items:center}
+.steps{display:grid;gap:16px}
+.step{display:flex;gap:24px;align-items:center;padding:22px 28px}
+.step h3{font-family:var(--fd);font-weight:800;font-size:30px;color:var(--ink-w9)}
+.step p{font-size:21px;color:var(--ink-w5)}
+.sup .ph{border-radius:12px;border:2px solid var(--gold-500);padding:30px 20px 0;overflow:hidden;height:600px;display:flex;align-items:flex-end;justify-content:center}
+.sup .ph img{height:560px}
+
+/* S11 */
+.s11 .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.s11 .logo{height:110px;filter:brightness(0) invert(1)}
+.s11 .big{font-family:var(--fd);font-weight:900;font-size:104px;line-height:1.05;color:var(--gold-500);margin-top:56px}
+.s11 .big span{color:#fff}
+.s11 .ev{font-size:28px;color:var(--metal-300);margin-top:22px}
+.s11 .url{font-family:var(--fd);font-weight:800;font-size:34px;color:var(--gold-500);margin-top:30px;letter-spacing:.04em}
+#fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:50}
+</style></head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 2 10 5-10 5L2 7l10-5Z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></symbol>
+  <symbol id="i-factory" viewBox="0 0 24 24"><path d="M2 20V9l6 4V9l6 4V4h4v4h2v12H2Z"/><path d="M6 17h1M11 17h1M16 17h1"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.7 9a1 1 0 0 1-.6 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.2-2.7a1.2 1.2 0 0 1 1.6 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1Z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2M15 18H9M19 18h2a1 1 0 0 0 1-1v-3.6a1 1 0 0 0-.2-.6l-3.5-4.4A1 1 0 0 0 17.5 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+</svg>
+<div id="stage">
+
+<!-- S1 hook 0–4 -->
+<section class="scene metal s1" data-s="0,4">
+  <div class="bg"></div><canvas class="sparks" width="1920" height="1080"></canvas>
+  <div class="frame" data-t="0.05" data-d="0.6" data-fx="scale"><i></i><i></i><i></i><i></i></div>
+  <div class="cam"><div class="wrap">
+    <div class="n59" data-t="0.15" data-d="0.4" data-fx="fade"><span data-count="59" data-ct="0.15" data-cd="1.5">59</span></div>
+    <div class="txt">
+      <div class="over" data-t="0.6" data-fx="left">Перечень № 1 МТР ПАО «Газпром»</div>
+      <div class="big" data-t="0.9" data-d="0.6" data-fx="up">позиций <span>группы «АРКУС»</span><br>для объектов «Газпрома»</div>
+    </div>
+  </div></div>
+</section>
+
+<!-- S2 reveal 4–10 -->
+<section class="scene metal s2" data-s="4,10">
+  <div class="bg"></div><div class="photo" data-t="4.0" data-d="1.0" data-fx="fade" data-zoom="1"></div><canvas class="sparks" width="1920" height="1080"></canvas>
+  <div class="frame" data-t="4.0" data-d="0.01" data-fx="fade"><i></i><i></i><i></i><i></i></div>
+  <div class="cam"><div class="inner">
+    <div class="over" data-t="4.15" data-fx="left">XIII отраслевое совещание ПАО «Газпром» · СВАРКА-2026</div>
+    <h1><div data-t="4.4" data-fx="up">Полный цикл сварки</div><div data-t="4.65" data-fx="up">труб, СДТ и ТПА</div><div class="w" data-t="5.0" data-fx="up">от К54 до К70</div></h1>
+    <div class="rule" data-t="5.4" data-fx="wipe"></div>
+    <div class="meta" data-t="5.7" data-fx="up">
+      <div><small>Даты</small><b>17–20 ноября 2026</b></div>
+      <div><small>Место</small><b>ООО «Газпром ВНИИГАЗ», пос. Развилка</b></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- S3 group 10–18 -->
+<section class="scene ivory s3" data-s="10,18">
+  <div class="bg"></div>
+  <div class="cam"><div class="pad">
+    <div class="over" data-t="10.1" data-fx="left">01 · Группа «АРКУС»</div>
+    <div class="h2" data-t="10.25" data-fx="up">Четыре собственные площадки</div>
+    <div class="plants">
+      <div class="card plant" data-t="10.5" data-fx="up"><div class="lg mplate"><img src="__IMG_l_czsm__"></div><div class="b"><h3>Череповецкий завод сварочных материалов</h3><div class="city">г. Череповец</div><div class="cap"><b>20 000</b><span>т/год</span></div><div class="meter"><i data-w="100" data-wt="11.0"></i></div></div></div>
+      <div class="card plant" data-t="11.0" data-fx="up"><div class="lg mplate"><img class="inv" src="__IMG_l_mez__"></div><div class="b"><h3>Магнитогорский электродный завод</h3><div class="city">г. Магнитогорск</div><div class="cap"><b>17 000</b><span>т/год</span></div><div class="meter"><i data-w="85" data-wt="11.5"></i></div></div></div>
+      <div class="card plant" data-t="11.5" data-fx="up"><div class="lg mplate"><img src="__IMG_l_ameta__"></div><div class="b"><h3>Амета-Электрод</h3><div class="city">г. Светлогорск</div><div class="cap"><b>12 000</b><span>т/год</span></div><div class="meter"><i data-w="60" data-wt="12.0"></i></div></div></div>
+      <div class="card plant" data-t="12.0" data-fx="up"><div class="lg mplate"><img src="__IMG_l_sms__"></div><div class="b"><h3>СварМонтажСтрой</h3><div class="city">г. Долгопрудный</div><div class="cap"><b>7 500</b><span>т/год</span></div><div class="meter"><i data-w="37.5" data-wt="12.5"></i></div></div></div>
+    </div>
+    <div class="facts mplate" data-t="13.0" data-fx="up">
+      <div><b><span data-count="56500" data-sep data-ct="13.1" data-cd="1.4">56 500</span></b><span>т/год · суммарная мощность</span></div>
+      <div><b><span data-count="600" data-ct="13.4" data-cd="1.1">600</span></b><span>сотрудников</span></div>
+      <div><b class="w">Лаборатория · R&amp;D · Центр обучения</b><span>испытания, разработка марок, подготовка сварщиков</span></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- S4 supply 18–24 -->
+<section class="scene ivory alt s4" data-s="18,24">
+  <div class="bg"></div>
+  <div class="cam"><div class="pad">
+    <div class="over" data-t="18.1" data-fx="left">Устойчивость поставок</div>
+    <div class="h2" data-t="18.25" data-fx="up">Цепочка под контролем группы —<br><em>от катанки до стыка</em></div>
+    <div class="chain">
+      <div class="card st" data-t="18.5" data-fx="up"><div class="glow" data-hot="20.5,21.0"></div><div class="top"><div class="plate">1</div><div class="tile"><svg><use href="#i-layers"/></svg></div></div><h3>Сырьё</h3><p>Отечественная катанка, компоненты покрытий и шихты, флюс</p></div>
+      <div class="card st" data-t="19.0" data-fx="up"><div class="glow" data-hot="21.0,21.5"></div><div class="top"><div class="plate">2</div><div class="tile"><svg><use href="#i-factory"/></svg></div></div><h3>Производство</h3><p>Четыре площадки группы</p></div>
+      <div class="card st" data-t="19.5" data-fx="up"><div class="glow" data-hot="21.5,22.0"></div><div class="top"><div class="plate">3</div><div class="tile"><svg><use href="#i-shield"/></svg></div></div><h3>Контроль</h3><p>Лаборатория сварки, входной и выходной контроль</p></div>
+      <div class="card st" data-t="20.0" data-fx="up"><div class="glow" data-hot="22.0,22.5"></div><div class="top"><div class="plate">4</div><div class="tile"><svg><use href="#i-truck"/></svg></div></div><h3>Объект</h3><p>Отгрузка и техническое сопровождение</p></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- S5a divider 24–26 -->
+<section class="scene metal s5a" data-s="24,26">
+  <div class="bg"></div>
+  <div class="cam"><div class="div02">
+    <div class="outline" data-t="24.05" data-d="0.4" data-fx="scale">02</div>
+    <div><div class="over" data-t="24.2" data-fx="left">СВАРКА-2024 → СВАРКА-2026</div><div class="h2" data-t="24.35" data-fx="up" style="font-size:84px">Дорожная карта К70<br><span style="color:#fff">выполнена</span></div></div>
+  </div></div>
+</section>
+
+<!-- S5b roadmap 26–34 -->
+<section class="scene ivory s5b" data-s="26,34">
+  <div class="bg"></div>
+  <div class="cam"><div class="pad">
+    <div class="over" data-t="26.1" data-fx="left">Дорожная карта К70</div>
+    <div class="h2" data-t="26.2" data-fx="up">От заявки — <em>до Перечня № 1</em></div>
+    <div class="road">
+      <div class="rh" data-t="26.3" data-fx="fade"><span>Марка</span><span>Статус на «СВАРКЕ-2024»</span><span></span><span>Статус на «СВАРКЕ-2026»</span></div>
+      <div class="rr"><div class="mk mplate" data-t="26.4" data-fx="left"><b>ULTRA 70K</b><span>проволока сплошного сечения</span></div><div class="was" data-t="26.55" data-fx="left">Заявлен на аттестационные испытания</div><div class="ar" data-t="28.4" data-fx="wipe"><svg viewBox="0 0 52 22"><path d="M0 11h48M40 3l8 8-8 8"/></svg></div><div class="card now" data-t="28.5" data-d="0.4" data-fx="scale"><div class="plate"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></div><div><b>Включён в Перечень № 1</b><span>Закл. № 096-2025 · п. 3.9.10; 3.11.29–30</span></div></div></div>
+      <div class="rr"><div class="mk mplate" data-t="26.9" data-fx="left"><b>ULTRA 327</b><span>для сварки под флюсом</span></div><div class="was" data-t="27.05" data-fx="left">Отработана технология сварки К70 с флюсом</div><div class="ar" data-t="28.9" data-fx="wipe"><svg viewBox="0 0 52 22"><path d="M0 11h48M40 3l8 8-8 8"/></svg></div><div class="card now" data-t="29.0" data-d="0.4" data-fx="scale"><div class="plate"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></div><div><b>Включён в Перечень № 1</b><span>Закл. № 109-2025 · п. 3.12.25 (с УФ-700П)</span></div></div></div>
+      <div class="rr"><div class="mk mplate" data-t="27.4" data-fx="left"><b>СМС-70А</b><span>порошковая проволока</span></div><div class="was" data-t="27.55" data-fx="left">Разработан и испытан по дорожной карте</div><div class="ar" data-t="29.4" data-fx="wipe"><svg viewBox="0 0 52 22"><path d="M0 11h48M40 3l8 8-8 8"/></svg></div><div class="card now" data-t="29.5" data-d="0.4" data-fx="scale"><div class="plate"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></div><div><b>Включён в Перечень № 1</b><span>Закл. № 116-2026 · п. 3.6.24</span></div></div></div>
+      <div class="rr"><div class="mk mplate" data-t="27.9" data-fx="left"><b>ULTRA 80S-G</b><span>проволока сплошного сечения</span></div><div class="was" data-t="28.05" data-fx="left">Не входил в программу 2024 г.</div><div class="ar" data-t="29.9" data-fx="wipe"><svg viewBox="0 0 52 22"><path d="M0 11h48M40 3l8 8-8 8"/></svg></div><div class="card now" data-t="30.0" data-d="0.4" data-fx="scale"><div class="plate"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></div><div><b>Включён в Перечень № 1</b><span>Закл. № 115-2026 · п. 3.8.12</span></div></div></div>
+    </div>
+    <div class="callout" data-t="30.8" data-fx="up"><span class="t">В РАБОТЕ</span><b>МЭЗ-70</b>, электроды покрытые — на «СВАРКЕ-2024» заявлены на аттестационные испытания</div>
+  </div></div>
+</section>
+
+<!-- S6 tests 34–44 -->
+<section class="scene metal s6" data-s="34,44">
+  <div class="bg"></div>
+  <div class="frame" data-t="34.0" data-d="0.5" data-fx="scale"><i></i><i></i><i></i><i></i></div>
+  <div class="cam"><div class="pad">
+    <div class="over" data-t="34.15" data-fx="left">Квалификационные испытания К70</div>
+    <div class="h2" data-t="34.3" data-fx="up">Все показатели — <em>в норме</em></div>
+    <div class="lead" data-t="34.6" data-fx="up">КСС: трубы Ø 1420×26,3 мм К70 (АО «ВМЗ») · ударный изгиб при −40 °С · белая риска — норма</div>
+    <div class="tests">
+      <div class="card test" data-t="35.0" data-fx="up"><div class="who">ULTRA 70K</div><div class="how">ААДП; ААДП + МАДП</div>
+        <div class="metric"><div class="top"><span>σв, МПа · ≥ σв трубы К70</span><b>713–715</b></div></div>
+        <div class="metric"><div class="top"><span>KCV-40, Дж/см² · норма ≥ 50</span><b><span data-t="37.35" data-d="0.35" data-fx="fade">55,8</span></b></div><div class="gauge"><i data-w="69.75" data-wt="36.3" data-wd="1.4"></i><u style="left:62.5%" data-l="50"></u></div></div>
+        <div class="metric"><div class="top"><span>HV10 МШ · норма ≤ 300</span><b><span data-t="38.05" data-d="0.35" data-fx="fade">281</span></b></div><div class="gauge"><i data-w="70.25" data-wt="37.0" data-wd="1.4"></i><u style="left:75%" data-l="300"></u></div></div>
+        <div class="chips" data-t="38.6" data-fx="fade"><span class="badge">Изгиб 180°</span><span class="badge">ВИК · РК · МУЗК</span></div></div>
+      <div class="card test" data-t="35.5" data-fx="up"><div class="who">ULTRA 327 + УФ-700П</div><div class="how">АФ — автоматическая под флюсом</div>
+        <div class="metric"><div class="top"><span>σв, МПа · ≥ σв трубы К70</span><b>694</b></div></div>
+        <div class="metric"><div class="top"><span>KCV-40, Дж/см² · норма ≥ 50</span><b><span data-t="37.55" data-d="0.35" data-fx="fade">56,7</span></b></div><div class="gauge"><i data-w="70.9" data-wt="36.5" data-wd="1.4"></i><u style="left:62.5%" data-l="50"></u></div></div>
+        <div class="metric"><div class="top"><span>HV10 МШ · норма ≤ 300</span><b><span data-t="38.25" data-d="0.35" data-fx="fade">260</span></b></div><div class="gauge"><i data-w="65" data-wt="37.2" data-wd="1.4"></i><u style="left:75%" data-l="300"></u></div></div>
+        <div class="chips" data-t="38.8" data-fx="fade"><span class="badge">Изгиб 180°</span><span class="badge">ВИК · РК · МУЗК</span></div></div>
+      <div class="card test" data-t="36.0" data-fx="up"><div class="who">ULTRA 80S-G + СМС-70А</div><div class="how">МП (корень) + АПИ (ГП, З, О)</div>
+        <div class="metric"><div class="top"><span>σв, МПа · ≥ σв трубы К70</span><b>719</b></div></div>
+        <div class="metric"><div class="top"><span>KCV-40, Дж/см² · норма ≥ 50</span><b><span data-t="37.75" data-d="0.35" data-fx="fade">75,4</span></b></div><div class="gauge"><i data-w="94.25" data-wt="36.7" data-wd="1.4"></i><u style="left:62.5%" data-l="50"></u></div></div>
+        <div class="metric"><div class="top"><span>HV10 МШ · норма ≤ 300</span><b><span data-t="38.45" data-d="0.35" data-fx="fade">251</span></b></div><div class="gauge"><i data-w="62.75" data-wt="37.4" data-wd="1.4"></i><u style="left:75%" data-l="300"></u></div></div>
+        <div class="chips" data-t="39.0" data-fx="fade"><span class="badge">Изгиб 180°</span><span class="badge">ВИК · РК · МУЗК</span></div></div>
+    </div>
+    <div class="allok">
+      <div class="card" data-t="39.5" data-fx="up"><b>«Годен»</b><span>ВИК, РК, МУЗК во всех КСС</span></div>
+      <div class="card" data-t="39.75" data-fx="up"><b>180°</b><span>статический изгиб без дефектов</span></div>
+      <div class="card" data-t="40.0" data-fx="up"><b>≤ 265 HV10</b><span>твёрдость ЗТВ при норме 325</span></div>
+      <div class="card" data-t="40.25" data-fx="up"><b>−40 °С</b><span>температура ударного изгиба</span></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- S7 products 44–50 -->
+<section class="scene ivory alt s7" data-s="44,50">
+  <div class="bg"></div>
+  <div class="cam"><div class="pad">
+    <div class="over" data-t="44.1" data-fx="left">Материалы для К70</div>
+    <div class="h2" data-t="44.25" data-fx="up">Четыре материала группы <em>в Перечне № 1</em></div>
+    <div class="prods">
+      <div class="card prod" data-t="44.5" data-fx="up"><div class="ph mplate">ULTRA 70K<span class="k">К70</span></div><div class="im"><img src="__IMG_p_ultra70k__"></div><div class="b"><div class="kind">Сплошного сечения</div><dl><dt>AWS</dt><dd>A5.28: ER100S-G</dd><dt>Способ</dt><dd>ААДП; МАДП — корень</dd><dt>Ø, мм</dt><dd>0,9; 1,0</dd></dl><div class="cert">Закл. № 31323949-096-2025</div></div></div>
+      <div class="card prod" data-t="45.0" data-fx="up"><div class="ph mplate">ULTRA 327<span class="k">К70</span></div><div class="im"><img src="__IMG_p_ultra327__"></div><div class="b"><div class="kind">Под флюс УФ-700П</div><dl><dt>Флюс</dt><dd>УФ-700П (Керамакс)</dd><dt>Способ</dt><dd>АФ — К, З, О</dd><dt>Ø, мм</dt><dd>3,0</dd></dl><div class="cert">Закл. № 31323949-109-2025</div></div></div>
+      <div class="card prod" data-t="45.5" data-fx="up"><div class="ph mplate">СМС-70А<span class="k">К70</span></div><div class="im"><img src="__IMG_p_sms70a__"></div><div class="b"><div class="kind">Порошковая</div><dl><dt>AWS</dt><dd>A5.29: E101T1-GM-H4</dd><dt>Способ</dt><dd>АПИ, M21 — ГП, З, О</dd><dt>Ø, мм</dt><dd>1,2</dd></dl><div class="cert">Закл. № 31323949-116-2026</div></div></div>
+      <div class="card prod" data-t="46.0" data-fx="up"><div class="ph mplate">ULTRA 80S-G<span class="k">К70</span></div><div class="im"><img src="__IMG_p_ultra80sg__"></div><div class="b"><div class="kind">Сплошного сечения</div><dl><dt>AWS</dt><dd>A5.28: ER90S-G</dd><dt>Способ</dt><dd>МП в CO₂ — корень</dd><dt>Ø, мм</dt><dd>1,2</dd></dl><div class="cert">Закл. № 31323949-115-2026</div></div></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- S8 perechen 50–58 -->
+<section class="scene ivory s8" data-s="50,58">
+  <div class="bg"></div>
+  <div class="cam"><div class="pad">
+    <div class="over" data-t="50.1" data-fx="left">Перечень № 1 МТР · раздел 3 · линейная часть</div>
+    <div class="p3">
+      <div class="card" data-t="50.2" data-fx="up"><div class="n"><span data-count="30" data-ct="50.3" data-cd="1">30</span></div><div><b>ООО «СМС»</b><span>10 марок проволок и прутков</span></div></div>
+      <div class="card" data-t="50.45" data-fx="up"><div class="n r"><span data-count="29" data-ct="50.55" data-cd="1">29</span></div><div><b>ООО «МЭЗ»</b><span>13 марок электродов</span></div></div>
+      <div class="card" data-t="50.7" data-fx="up"><div class="n"><span data-count="10" data-ct="50.8" data-cd="1">10</span></div><div><b>способов сварки</b><span>РД, РАД, МП, МАДП, ААД, ААДП, МАД, МПИ, АПИ, АФ</span></div></div>
+    </div>
+    <div class="ctrl" data-t="51.2" data-fx="fade">
+      <div class="seg mplate"><span class="on">Раздел 3 · 33 позиции</span><span>Раздел 4 · 26</span></div>
+      <div class="seg mplate" id="clsF"><span data-cls="all">Все</span><span>К54</span><span>К60</span><span>К65</span><span id="k70btn" data-cls="70">К70</span></div>
+    </div>
+    <div class="tw" data-t="51.4" data-fx="up"><table id="t3"><thead><tr><th style="width:430px">Подраздел · способ</th><th data-c="54">К54</th><th data-c="60">К60</th><th data-c="65">К65</th><th data-c="70" class="k70">К70</th><th style="text-align:center">Поз.</th></tr></thead><tbody id="t3b"></tbody></table></div>
+  </div></div>
+  <svg class="cursor" id="cursor" viewBox="0 0 24 24"><path d="M4 2l16 9-7 2-3 7z" fill="#fff" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/></svg>
+  <div class="ripple" id="ripple"></div>
+</section>
+
+<!-- S9 joint 58–66 -->
+<section class="scene metal s9" data-s="58,66">
+  <div class="bg"></div>
+  <div class="cam"><div class="pad">
+    <div class="over" data-t="58.1" data-fx="left">Весь стык · К70</div>
+    <div class="h2" data-t="58.25" data-fx="up">Каждый слой шва — <em>для каждого класса прочности</em></div>
+    <div class="joint">
+      <div class="card jsvg" data-t="58.6" data-fx="up">
+        <svg viewBox="0 0 420 420" width="468" height="468">
+          <defs><linearGradient id="pl" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#4a4a4a"/><stop offset="1" stop-color="#2a2a2a"/></linearGradient></defs>
+          <polygon points="0,40 70,40 196,310 196,370 0,370" fill="url(#pl)"/>
+          <polygon points="420,40 350,40 224,310 224,370 420,370" fill="url(#pl)"/>
+          <g class="ly" data-l="ZO"><path d="M70,40 Q210,10 350,40 L318,108 L102,108 Z" fill="#f8e2ad"/><polygon points="102,108 318,108 290,168 130,168" fill="#f5d590"/><polygon points="130,168 290,168 266,220 154,220" fill="#f3cb73"/></g>
+          <g class="ly" data-l="GP"><polygon points="154,220 266,220 249,256 171,256" fill="#e0b352"/></g>
+          <g class="ly" data-l="K"><polygon points="171,256 249,256 230,300 228,310 192,310 190,300" fill="#c11843"/><polygon points="196,310 224,310 224,370 196,370" fill="#c11843"/></g>
+          <g class="ly" data-l="P"><path d="M184,370 L236,370 Q236,396 210,396 Q184,396 184,370 Z" fill="#98002e"/></g>
+          <g font-size="17" text-anchor="middle" fill="#191917"><text x="210" y="80">О</text><text x="210" y="145">З</text><text x="210" y="201">З</text><text x="210" y="245">ГП</text><text x="210" y="290" fill="#fff">К</text><text x="210" y="390" fill="#fff">П</text></g>
+        </svg>
+      </div>
+      <div>
+        <div class="layers">
+          <div class="layer" data-l="K" data-t="59.0" data-fx="left"><div class="code">К<small>корневой</small></div><div><span class="mat">ULTRA 80S-G<em>МП</em></span><span class="mat">ULTRA 70K<em>МАДП, ААДП</em></span><span class="mat">ULTRA 327 + флюс<em>АФ</em></span></div></div>
+          <div class="layer" data-l="GP" data-t="59.25" data-fx="left"><div class="code">ГП<small>горячий проход</small></div><div><span class="mat">СМС-70А<em>АПИ</em></span></div></div>
+          <div class="layer" data-l="ZO" data-t="59.5" data-fx="left"><div class="code">З, О<small>заполн. и облиц.</small></div><div><span class="mat">СМС-70А<em>АПИ</em></span><span class="mat">ULTRA 70K<em>ААДП</em></span><span class="mat">ULTRA 327 + флюс<em>АФ</em></span></div></div>
+          <div class="layer" data-l="P" data-t="59.75" data-fx="left"><div class="code">П<small>подварочный</small></div><div><span class="mat">ULTRA 70K<em>МАДП</em></span></div></div>
+        </div>
+        <div class="done" data-t="62.5" data-fx="up"><b>Все 16 ячеек «слой × класс» закрыты</b>корень · горячий проход · заполнение · облицовка · подварка — К54, К60, К65, К70</div>
+      </div>
+    </div>
+  </div></div>
+</section>
+
+<!-- S10 support 66–70 -->
+<section class="scene ivory alt s10" data-s="66,70">
+  <div class="bg"></div>
+  <div class="cam"><div class="pad">
+    <div class="over" data-t="66.1" data-fx="left">Сопровождение</div>
+    <div class="h2" data-t="66.2" data-fx="up">От технологической карты <em>до стыка</em></div>
+    <div class="sup">
+      <div class="steps">
+        <div class="card step" data-t="66.4" data-fx="left"><div class="plate">1</div><div><h3>Подбор материалов</h3><p>под операционные технологические карты</p></div></div>
+        <div class="card step" data-t="66.65" data-fx="left"><div class="plate">2</div><div><h3>Аттестация технологий сварки</h3><p>участие специалистов группы в испытаниях</p></div></div>
+        <div class="card step" data-t="66.9" data-fx="left"><div class="plate">3</div><div><h3>Сопровождение на объектах</h3><p>выезд технологов, отработка режимов</p></div></div>
+        <div class="card step" data-t="67.15" data-fx="left"><div class="plate">4</div><div><h3>Обучение сварщиков</h3><p>центр обучения и лаборатория сварки</p></div></div>
+      </div>
+      <div class="ph mplate" data-t="66.5" data-fx="fade"><img src="__IMG_welder_bw__"></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- S11 outro 70–75 -->
+<section class="scene metal s11" data-s="70,75.1">
+  <div class="bg"></div><canvas class="sparks" width="1920" height="1080"></canvas>
+  <div class="frame" data-t="70.0" data-d="0.6" data-fx="scale" data-keep="1"><i></i><i></i><i></i><i></i></div>
+  <div class="cam"><div class="center">
+    <img class="logo" src="__IMG_logo__" data-t="70.2" data-d="0.6" data-fx="scale" data-keep="1">
+    <div class="big" data-t="70.6" data-d="0.6" data-fx="up" data-keep="1">Полный цикл сварки.<br><span>От К54 до К70.</span></div>
+    <div class="rule" data-t="71.1" data-fx="wipe" data-keep="1"></div>
+    <div class="ev" data-t="71.3" data-fx="up" data-keep="1">XIII отраслевое совещание ПАО «Газпром» «СВАРКА-2026» · 17–20 ноября 2026</div>
+    <div class="url" data-t="71.6" data-fx="up" data-keep="1">www.arcus.ru</div>
+  </div></div>
+</section>
+<div id="fade"></div>
+</div>
+
+<script>
+(function(){
+  // table rows (section 3 of Perechen No.1)
+  var S='s',Z='z';
+  var R=[['3.1 ЭпБ – РД','электроды',[[[Z,'МЭЗЛБ-52У','Ø 2,6–4,0']],[[Z,'МЭЗЛБ-52У','Ø 2,6; 3,2'],[Z,'МЭЗ-60К','Ø 3,2; 4,0']],[[Z,'МЭЗ-65','Ø 3,2; 4,0']],[]],7],
+    ['3.5 ПпГ – МПИ','порошковые',[[[S,'СМС-81Н','Ø 1,2']],[[S,'СМС-60А','Ø 1,2']],[[S,'СМС-65А','Ø 1,2']],[]],3],
+    ['3.6 ПпГ – АПИ','порошковые',[[[S,'СМС-81Н','Ø 1,2']],[[S,'СМС-60А','Ø 1,2']],[[S,'СМС-65А','Ø 1,2']],[[S,'СМС-70А','Ø 1,2']]],4],
+    ['3.7 Пс – РАД, РАДН','прутки',[[[S,'ULTRA A-65','Ø 2,0; 2,4']],[],[],[]],2],
+    ['3.8 Пс – МП','в CO₂',[[],[[S,'ULTRA 70S-G','Ø 1,2']],[[S,'ULTRA 70S-G','Ø 1,2']],[[S,'ULTRA 80S-G','Ø 1,2']]],2],
+    ['3.9 Пс – МАДП','в смесях',[[],[[S,'ULTRA 70S-G','Ø 1,2'],[S,'ПроТЭК 60','Ø 0,9']],[[S,'ПроТЭК 60','Ø 0,9']],[[S,'ULTRA 70K','Ø 0,9']]],3],
+    ['3.10 Пс – ААД','неплав. электродом',[[[S,'ПроТЭК 60','Ø 0,9–1,2']],[[S,'ПроТЭК 60','Ø 0,9; 1,0']],[],[]],3],
+    ['3.11 Пс – ААДП, АПГ','в защитных газах',[[],[[S,'ПроТЭК 60','Ø 0,9–1,2']],[[S,'ПроТЭК 60','Ø 0,9; 1,0']],[[S,'ULTRA 70K','Ø 0,9; 1,0']]],5],
+    ['3.12 АФ','проволока + флюс',[[],[],[[S,'ULTRA 327 + УФ-700П','Ø 3,0']],[[S,'ULTRA 327 + УФ-700П','Ø 3,0']]],1],
+    ['3.15 Пс – МАД','неплав. электродом',[[[S,'ПроТЭК 60','Ø 0,9–1,2']],[[S,'ПроТЭК 60','Ø 0,9; 1,0']],[],[]],3]];
+  var C=['54','60','65','70'],h='';
+  R.forEach(function(r){h+='<tr><td class="l"><b>'+r[0]+'</b><span>'+r[1]+'</span></td>';
+    r[2].forEach(function(c,i){h+='<td data-c="'+C[i]+'"'+(c.length?'':' class="dash"')+'>'+(c.length?c.map(function(m){return '<span class="chip '+m[0]+'">'+m[1]+'<small>'+m[2]+'</small></span>'}).join(''):'—')+'</td>'});
+    h+='<td class="n">'+r[3]+'</td></tr>'});
+  document.getElementById('t3b').innerHTML=h;
+
+  var clamp=function(x){return x<0?0:x>1?1:x};
+  var E=function(x){x=clamp(x);return 1-Math.pow(1-x,3)};
+  var EIO=function(x){x=clamp(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2};
+  var scenes=[].slice.call(document.querySelectorAll('.scene')).map(function(s){var r=s.dataset.s.split(',').map(Number);return {el:s,s:r[0],e:r[1],cam:s.querySelector('.cam'),bg:s.querySelector('.bg'),sp:s.querySelector('canvas.sparks')}});
+  var anim=[].slice.call(document.querySelectorAll('[data-t]')).map(function(el){var sc=el.closest('.scene');var r=sc.dataset.s.split(',').map(Number);
+    return {el:el,t:+el.dataset.t,d:+(el.dataset.d||0.5),fx:el.dataset.fx||'up',e:r[1],keep:!!el.dataset.keep,zoom:!!el.dataset.zoom,s:r[0]}});
+  var counts=[].slice.call(document.querySelectorAll('[data-count]'));
+  var bars=[].slice.call(document.querySelectorAll('[data-w]'));
+  var hots=[].slice.call(document.querySelectorAll('[data-hot]'));
+  var cells=[].slice.call(document.querySelectorAll('#t3 [data-c]'));
+  var k70=document.getElementById('k70btn'),allB=document.querySelector('#clsF [data-cls="all"]');
+  var cur=document.getElementById('cursor'),rip=document.getElementById('ripple');
+  var lys=[].slice.call(document.querySelectorAll('.s9 .ly')),lrows=[].slice.call(document.querySelectorAll('.s9 .layer'));
+  var fade=document.getElementById('fade');
+
+  function rnd(i){var x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)}
+  function sparks(cv,t,local){var g=cv.getContext('2d');g.clearRect(0,0,1920,1080);
+    for(var i=0;i<70;i++){var x0=rnd(i)*1920,sp=40+rnd(i+99)*120,ph=rnd(i+7)*1080,sz=1+rnd(i+3)*2.2;
+      var y=1080-((ph+sp*t)%1180),x=x0+Math.sin(t*0.8+i)*22;
+      var a=0.15+0.5*rnd(i+17);a*=Math.min(1,local/0.8);
+      g.fillStyle='rgba(243,203,115,'+a.toFixed(3)+')';g.beginPath();g.arc(x,y,sz,0,6.283);g.fill()}}
+
+  window.seek=function(t){
+    scenes.forEach(function(S){var on=t>=S.s&&t<S.e;S.el.classList.toggle('on',on);if(!on)return;
+      var p=(t-S.s)/(S.e-S.s);S.cam.style.transform='scale('+(1+0.025*p)+')';
+      S.bg.style.transform='scale('+(1.02+0.03*p)+') translateX('+(-12*p)+'px)';
+      if(S.sp)sparks(S.sp,t,t-S.s)});
+    anim.forEach(function(a){if(t<a.s||t>=a.e){return}
+      var pi=E((t-a.t)/a.d),po=a.keep?0:E((t-(a.e-0.42))/0.3),v=pi*(1-po),tr='';
+      if(a.fx==='up')tr='translateY('+((1-pi)*34-po*18)+'px)';
+      else if(a.fx==='left')tr='translateX('+((1-pi)*-46)+'px) translateY('+(-po*18)+'px)';
+      else if(a.fx==='scale')tr='scale('+(0.9+0.1*pi)+')';
+      if(a.zoom)tr='scale('+(1.08-0.06*clamp((t-a.s)/6))+')';
+      if(a.fx==='wipe'){a.el.style.clipPath='inset(0 '+((1-pi)*100)+'% 0 0)';a.el.style.opacity=1-po}
+      else{a.el.style.opacity=v.toFixed(4);a.el.style.transform=tr}});
+    counts.forEach(function(c){var tg=+c.dataset.count,ct=+c.dataset.ct,cd=+c.dataset.cd,dec=+(c.dataset.dec||0);var v=tg*E((t-ct)/cd);
+      var s=dec?v.toFixed(dec).replace('.',','):Math.round(v).toString();if(c.hasAttribute('data-sep'))s=Math.round(v).toLocaleString('ru-RU');c.textContent=s});
+    bars.forEach(function(b){var p=E((t-(+b.dataset.wt))/(+(b.dataset.wd||1)));b.style.width=(+b.dataset.w*p)+'%'});
+    hots.forEach(function(g){var r=g.dataset.hot.split(',').map(Number);var p=t<r[0]?0:t<r[0]+.15?(t-r[0])/.15:t<r[1]?1:Math.max(0,1-(t-r[1])/.35);g.style.opacity=p});
+    // S8 cursor + filter click at 54.5
+    var tc=54.5;
+    var pa=[1500,1060],pb=[k70.offsetLeft?0:0,0];
+    var kr=k70.getBoundingClientRect(),st=document.getElementById('stage').getBoundingClientRect();
+    var tx=kr.left-st.left+kr.width/2,ty=kr.top-st.top+kr.height/2;
+    var m=EIO((t-53.0)/1.4);cur.style.left=(pa[0]+(tx-pa[0])*m)+'px';cur.style.top=(pa[1]+(ty-pa[1])*m)+'px';
+    cur.style.opacity=t<53?0:t<57.6?1:0;cur.style.transform='scale('+(t>tc-0.08&&t<tc+0.1?0.85:1)+')';
+    var rp=clamp((t-tc)/0.5);rip.style.left=(tx-40)+'px';rip.style.top=(ty-40)+'px';rip.style.opacity=t>=tc&&rp<1?(1-rp):0;rip.style.transform='scale('+(0.3+rp)+')';
+    var on70=t>=tc;k70.classList.toggle('on',on70);allB.classList.toggle('on',!on70);
+    var dim=E((t-tc)/0.35);cells.forEach(function(c){var hit=c.dataset.c==='70';c.style.opacity=on70&&!hit?(1-0.8*dim):1;c.style.background=on70&&hit&&c.tagName==='TD'?'rgba(255,251,240,'+dim+')':''});
+    // S9 layer highlight
+    var seq=[['K',60.4],['GP',61.0],['ZO',61.6],['P',62.2]],act=null,all=t>=62.8;
+    seq.forEach(function(s){if(t>=s[1]&&t<s[1]+0.6)act=s[0]});
+    lys.forEach(function(g){var l=g.dataset.l;var o=t<60.4?1:all?1:(act===l?1:(act?0.3:1));g.style.opacity=o;g.style.filter=(act===l)?'drop-shadow(0 0 12px rgba(243,203,115,.8))':'none'});
+    lrows.forEach(function(r){var on=act===r.dataset.l||(all&&t<63.2&&t>=62.8);r.style.borderColor=on?'#f3cb73':'rgba(243,203,115,.3)';r.style.background=on?'rgba(54,54,54,.95)':'rgba(26,26,26,.88)'});
+    fade.style.opacity=t>74.3?clamp((t-74.3)/0.7):0;
+  };
+  window.ready=Promise.all([document.fonts.ready].concat([].slice.call(document.images).map(function(i){return i.decode().catch(function(){})})));
+})();
+</script>
+</body></html>
