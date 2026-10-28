@@ -1,2 +1,9 @@
 __pycache__/
 *.pyc
+
+# brag: промежуточные файлы рендера
+brag-output/work/frames/
+brag-output/work/stills*/
+brag-output/work/*.png
+brag-output/work/*.wav
+brag-output/work/fonts/fonts.css
