@@ -5,14 +5,15 @@ const path = require('path');
 (async () => {
   const mode = process.argv[2];
   const b = await chromium.launch();
-  const pg = await b.newPage({ viewport: { width: 1920, height: 1080 } });
+  const V = process.env.VERT === '1';
+  const pg = await b.newPage({ viewport: V ? { width: 1080, height: 1920 } : { width: 1920, height: 1080 } });
   pg.on('pageerror', e => console.error('PAGEERR', e.message));
-  await pg.goto('file://' + path.join(__dirname, 'video.html'));
+  await pg.goto('file://' + path.join(__dirname, V ? 'video_v.html' : 'video.html'));
   await pg.evaluate(() => window.ready);
   if (mode === 'stills') {
     for (const t of process.argv[3].split(',').map(Number)) {
       await pg.evaluate(t => render(t), t);
-      await pg.screenshot({ path: path.join(__dirname, 'stills', `t${t.toFixed(2)}.jpg`), type: 'jpeg', quality: 85 });
+      await pg.screenshot({ path: path.join(__dirname, V ? 'stills_v' : 'stills', `t${t.toFixed(2)}.jpg`), type: 'jpeg', quality: 85 });
     }
   } else {
     const FPS = 30, N = 60 * FPS;
