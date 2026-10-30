@@ -105,11 +105,12 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);color:
 .kpi .c{font-size:36px;color:var(--muted);line-height:1.25}
 
 /* S8 people */
-#s8 .qa{position:absolute;top:330px;width:820px;background:var(--surface);border:2px solid var(--line);border-radius:20px;padding:44px 48px;min-height:520px}
+#s8 .qa{position:absolute;top:370px;width:820px;background:var(--surface);border:2px solid var(--line);border-radius:20px;padding:44px 48px;min-height:520px}
 #s8 .q{font-size:46px;font-weight:600;line-height:1.2}
 #s8 .q::before{content:"Вопрос";display:block;font-family:var(--f-mono);font-size:26px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
 #s8 .a{margin-top:34px;border-left:8px solid var(--copper);padding-left:30px}
 #s8 .a b{display:block;font-family:var(--f-display);font-weight:600;font-size:96px;color:var(--copper);line-height:1}
+#s8 #a2 b{font-size:72px}
 #s8 .a span{display:block;font-size:38px;line-height:1.3;margin-top:16px}
 
 /* S9 TEO */
@@ -289,14 +290,14 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);color:
 
   <!-- S8 people 52.8–60.0 -->
   <section class="layer" id="s8">
-    <div class="head"><div class="h" id="s8h">Что услышит персонал</div></div>
+    <div class="head"><div class="h" id="s8h">Сокращений нет</div><div class="sub" id="s8s">Проект закрывает вакансии</div></div>
     <div class="qa" id="qa1" style="left:96px">
       <div class="q">Сколько планируется уволить?</div>
-      <div class="a" id="a1"><b>Никого.</b><span>Проект отменяет найм 4 намотчиков; действующие переходят в операторы-наладчики</span></div>
+      <div class="a" id="a1"><b>Никого.</b><span>Проект отменяет найм 4 намотчиков; действующие переходят в операторы-наладчики и на смежные участки</span></div>
     </div>
     <div class="qa" id="qa2" style="left:1004px">
-      <div class="q">Как изменится оплата?</div>
-      <div class="a" id="a2"><b>Выше.</b><span>Разряд наладчика выше: оплата зависит от квалификации, а не от выносливости</span></div>
+      <div class="q">Как изменится оплата труда?</div>
+      <div class="a" id="a2"><b>Разряд выше.</b><span>Оплата зависит от квалификации, а не от выносливости</span></div>
     </div>
   </section>
 
@@ -309,11 +310,11 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);color:
     <div class="pb">
       <div class="prow" id="pr1"><div class="pl">Вручную <small>· 12 намотчиков, млн ₽ в год</small></div><div class="ptrack" id="pt1"></div></div>
       <div class="prow" id="pr2"><div class="pl cu">РКНУ <small>· 4 + 0,5 ставки, млн ₽ в год</small></div><div class="ptrack" id="pt2"></div></div>
-      <div class="badge" id="pbadge">−23,0 млн ₽ в год</div>
+      <div class="badge" id="pbadge">−22,9 млн ₽ в год</div>
     </div>
     <div class="side">
-      <div class="stat" id="sx1"><b>42,5 млн ₽</b><span>вложения в 3 линии, без НДС</span></div>
-      <div class="stat" id="sx2"><b>−50%</b><span>себестоимость намотки 1 т: 6 202 → 3 121 ₽</span></div>
+      <div class="stat" id="sx1"><b>42,5 млн ₽</b><span>без НДС: комплекс 40,8 млн + подготовка площадки 1,65 млн</span></div>
+      <div class="stat" id="sx2"><b>−50%</b><span>себестоимость намотки 1 т: 6 204 → ≤ 3 130 ₽</span></div>
     </div>
   </section>
 
@@ -321,7 +322,7 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);color:
   <section class="layer" id="s10">
     <div class="center">
       <div class="big" id="s10n">36 <span>мес.</span></div>
-      <div class="sub" id="s10s">окупаемость дополнительных вложений</div>
+      <div class="sub" id="s10s">окупаемость доп. вложений к ручному варианту 6 постов</div>
       <div><div class="callout risk" id="s10r">Главный риск: <b>КП на 40% дороже ТЭО → 55 мес.</b></div></div>
       <div><div class="callout" id="s10c">Старт — <b>опытный образец: 1 линия, 13,6 млн ₽</b></div></div>
     </div>
@@ -513,7 +514,7 @@ function render(t){
   }
 
   [a,o]=layer('s8',t);
-  show($('s8h'),t,a+0.1,o); show($('qa1'),t,a+0.4,o,50); show($('a1'),t,a+1.2,o,20);
+  show($('s8h'),t,a+0.1,o); show($('s8s'),t,a+0.4,o); show($('qa1'),t,a+0.4,o,50); show($('a1'),t,a+1.2,o,20);
   show($('qa2'),t,a+3.0,o,50); show($('a2'),t,a+3.8,o,20);
 
   [a,o]=layer('s9',t);
