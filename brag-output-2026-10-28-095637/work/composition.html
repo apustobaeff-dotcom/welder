@@ -135,6 +135,30 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);color:
 .callout{margin-top:34px;border-left:8px solid var(--copper);background:var(--copper-soft);padding:26px 36px;border-radius:0 16px 16px 0;font-size:42px;display:inline-block;line-height:1.25}
 .callout.risk{border-left-color:var(--crit);background:var(--crit-soft)}
 .callout b{font-weight:600}
+.callout.ok{border-left-color:var(--teal);background:var(--teal-soft)}
+/* S11 payback scenarios */
+#s11 .sc{position:absolute;left:96px;top:390px;width:1728px}
+.srow{display:grid;grid-template-columns:600px 1fr;align-items:center;gap:24px;height:96px;margin-bottom:14px}
+.srow .sl{font-size:36px;font-weight:600;line-height:1.15}
+.srow .sl small{display:block;font-size:26px;font-weight:400;color:var(--muted)}
+.strack{position:relative;height:72px}
+.sbar{position:absolute;left:0;top:0;height:72px;border-radius:10px}
+.sval{position:absolute;top:0;height:72px;z-index:2;background:var(--bg);padding:0 10px;margin-left:-10px;display:flex;align-items:center;font-family:var(--f-display);font-weight:600;font-size:46px;white-space:nowrap}
+#s11 .mark{position:absolute;z-index:1;top:-24px;bottom:-10px;border-left:4px dashed var(--copper)}
+#s11 .mlab{position:absolute;top:-62px;font-family:var(--f-mono);font-size:26px;color:var(--copper);white-space:nowrap;transform:translateX(-50%)}
+/* S12 risks + acceptance */
+#s12 .rk{position:absolute;left:96px;top:380px;width:820px;background:var(--surface);border:2px solid var(--line);border-radius:20px;padding:40px 44px;min-height:500px}
+#s12 .rk .lab{font-family:var(--f-mono);font-size:26px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+#s12 .rk .rt{font-size:46px;font-weight:600;line-height:1.2;margin-top:14px}
+#s12 .rk .rs{display:inline-block;margin-top:16px;font-family:var(--f-mono);font-size:28px;color:var(--crit);background:var(--crit-soft);padding:6px 14px;border-radius:8px}
+#s12 .rk .ms{margin-top:34px;border-left:8px solid var(--teal);padding-left:28px}
+#s12 .rk .ms span{display:block;font-family:var(--f-mono);font-size:26px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+#s12 .rk .ms b{display:block;font-family:var(--f-display);font-weight:600;font-size:50px;color:var(--teal-deep);line-height:1.15;margin-top:8px}
+#s12 .acc{position:absolute;left:1004px;top:380px;width:820px}
+#s12 .acc .lab{font-family:var(--f-mono);font-size:26px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+#s12 .ar{border-top:2px solid var(--line);padding:22px 0 20px}
+#s12 .ar b{display:block;font-family:var(--f-display);font-weight:600;font-size:60px;color:var(--copper);line-height:1.05;white-space:nowrap}
+#s12 .ar span{display:block;font-size:32px;color:var(--muted);line-height:1.25;margin-top:8px}
 #s10 canvas{position:absolute;left:1330px;top:250px;width:500px;height:344px}
 </style></head>
 <body>
@@ -318,12 +342,41 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);color:
     </div>
   </section>
 
-  <!-- S10 final 67.2–74.4 -->
+  <!-- S11 payback 67.2–76.8 -->
+  <section class="layer" id="s11">
+    <div class="head">
+      <div class="h" id="s11h">Окупаемость — <span class="cu">36 мес.</span></div>
+      <div class="sub" id="s11s">Сценарии расчёта; главный риск — цена поставки</div>
+    </div>
+    <div class="sc" id="sc"></div>
+  </section>
+
+  <!-- S12 risks + acceptance 76.8–86.4 -->
+  <section class="layer" id="s12">
+    <div class="head">
+      <div class="h" id="s12h">27 рисков, <span class="cu">9 критических</span></div>
+      <div class="sub" id="s12s">Оплата привязана к выполнению критериев приёмки ТЗ</div>
+    </div>
+    <div class="rk" id="rk">
+      <div class="lab">Самый дорогой риск</div>
+      <div class="rt">Потеря аванса 30% (≈4,8 млн ₽)</div>
+      <div class="rs">оценка 0,24</div>
+      <div class="ms" id="rkm"><span>Мера</span><b>Банковская гарантия возврата аванса</b></div>
+    </div>
+    <div class="acc">
+      <div class="lab" id="acl">Приёмка по ТЗ РКНУ-ТЗ-01</div>
+      <div class="ar" id="ac0"><b>FAT ≥ 2 т</b><span>нашей проволоки + проверка лабораторией СМС</span></div>
+      <div class="ar" id="ac1"><b>SAT 72 ч</b><span>непрерывной работы; остановка — отсчёт заново</span></div>
+      <div class="ar" id="ac2"><b>30/20/20/30</b><span>оплата за линию €140 000 без НДС</span></div>
+    </div>
+  </section>
+
+  <!-- S10 final 86.4–93.6 -->
   <section class="layer" id="s10">
     <div class="center">
       <div class="big" id="s10n">36 <span>мес.</span></div>
       <div class="sub" id="s10s">окупаемость доп. вложений к ручному варианту 6 постов</div>
-      <div><div class="callout risk" id="s10r">Главный риск: <b>КП на 40% дороже ТЭО → 55 мес.</b></div></div>
+      <div><div class="callout ok" id="s10r"><b>15 мес. к текущим 4 постам</b> — при подтверждённом волочении</div></div>
       <div><div class="callout" id="s10c">Старт — <b>опытный образец: 1 линия, 13,6 млн ₽</b></div></div>
     </div>
     <canvas id="spool2" width="1000" height="688"></canvas>
@@ -333,7 +386,7 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);color:
 </div>
 
 <script>
-const DUR=74.4, BAR=2.4;
+const DUR=93.6, BAR=2.4;
 const $=id=>document.getElementById(id);
 const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
 const p=(t,a,b)=>cl((t-a)/(b-a));
@@ -345,7 +398,7 @@ function show(el,t,tin,tout,dy=40,din=.6,dout=.35){
   const i=eo(p(t,tin,tin+din)), o=eio(p(t,tout,tout+dout));
   el.style.opacity=i*(1-o); el.style.transform=`translateY(${(1-i)*dy - o*dy*.6}px)`;
 }
-const SC={s1:[0,7.2],s2:[7.2,14.4],s3:[14.4,19.2],s4:[19.2,28.8],s5:[28.8,36],s6:[36,43.2],s7:[43.2,52.8],s8:[52.8,60],s9:[60,67.2],s10:[67.2,74.4]};
+const SC={s1:[0,7.2],s2:[7.2,14.4],s3:[14.4,19.2],s4:[19.2,28.8],s5:[28.8,36],s6:[36,43.2],s7:[43.2,52.8],s8:[52.8,60],s9:[60,67.2],s11:[67.2,76.8],s12:[76.8,86.4],s10:[86.4,93.6]};
 function layer(id,t){const [a,b]=SC[id]; $(id).style.visibility=(t>=a-0.01&&t<b)?'visible':'hidden'; return [a,b-0.45];}
 
 /* ---------- S1 ---------- */
@@ -458,7 +511,22 @@ function pbars(t,a){
   $('pt2').innerHTML=`<div class="pbar" style="width:${13.9*PPX*g2}px;background:#AE5A24"></div><div class="pval cu" style="left:${13.9*PPX*g2+20}px;opacity:${g2}">${(13.9*g2).toFixed(1).replace('.',',')}</div>`;
 }
 
-const LABELS=[[0,'Участок намотки'],[14.4,'Концепция'],[19.2,'Ячейка'],[28.8,'Участок'],[36,'Цикл'],[43.2,'Цели и KPI'],[52.8,'Персонал'],[60,'ТЭО'],[67.2,'Окупаемость']];
+const SCN=[['К текущим 4 постам','при подтверждённом волочении',15,'#1C7A7A'],['По денежному потоку','прибыль + амортизация',28,'#1C7A7A'],
+  ['Базовый (шаблон)','к ручному варианту 6 постов',36,'#AE5A24'],['Оплата наладчиков +30%','',44,'#B6C1C7'],['Цена КП +40%','главный риск',55,'#BF3A2E']];
+const SPX=930/60;
+(function(){ let h=''; SCN.forEach((r,i)=>{ h+=`<div class="srow" id="sr${i}"><div class="sl">${r[0]}${r[1]?`<small>${r[1]}</small>`:''}</div><div class="strack" id="stk${i}"></div></div>`; });
+  $('sc').innerHTML=h; })();
+function scen(t,a){
+  SCN.forEach((r,i)=>{
+    const b=a+1.2+i*0.9, g=eo(p(t,b,b+0.7)); $('sr'+i).style.opacity=cl(p(t,b-0.2,b+0.2));
+    const w=r[2]*SPX*g;
+    let h=`<div class="sbar" style="width:${w}px;background:${r[3]}"></div><div class="sval" style="left:${w+20}px;opacity:${g};color:${r[3]==='#B6C1C7'?'#56646D':r[3]}">${Math.round(r[2]*g)} мес.</div>`;
+    if(i===0) h+=`<div class="mark" style="left:${36*SPX}px;opacity:${cl(p(t,a+0.9,a+1.4))}"></div><div class="mlab" style="left:${36*SPX}px;opacity:${cl(p(t,a+0.9,a+1.4))}">36 мес. — база</div>`;
+    else h+=`<div class="mark" style="left:${36*SPX}px;opacity:${cl(p(t,a+0.9,a+1.4))};top:-14px"></div>`;
+    $('stk'+i).innerHTML=h;
+  });
+}
+const LABELS=[[0,'Участок намотки'],[14.4,'Концепция'],[19.2,'Ячейка'],[28.8,'Участок'],[36,'Цикл'],[43.2,'Цели и KPI'],[52.8,'Персонал'],[60,'ТЭО'],[67.2,'Окупаемость'],[76.8,'Риски и ТЗ'],[86.4,'Итог']];
 
 function render(t){
   $('prog').style.width=(t/DUR*1920)+'px';
@@ -521,6 +589,15 @@ function render(t){
   show($('s9h'),t,a+0.1,o); show($('s9s'),t,a+0.5,o);
   show($('pr1'),t,a+0.8,o,30); show($('pr2'),t,a+1.3,o,30); pbars(t,a);
   show($('pbadge'),t,a+2.6,o,30); show($('sx1'),t,a+3.4,o,30); show($('sx2'),t,a+4.2,o,30);
+
+  [a,o]=layer('s11',t);
+  show($('s11h'),t,a+0.1,o); show($('s11s'),t,a+0.5,o); show($('sc'),t,a+0.8,o,30);
+  scen(t,a);
+
+  [a,o]=layer('s12',t);
+  show($('s12h'),t,a+0.1,o); show($('s12s'),t,a+0.5,o);
+  show($('rk'),t,a+1.2,o,50); show($('rkm'),t,a+2.2,o,20);
+  show($('acl'),t,a+3.2,o,20); for(let i=0;i<3;i++) show($('ac'+i),t,a+3.4+i*1.0,o,30);
 
   [a,o]=layer('s10',t);
   const s=eo(p(t,a+0.0,a+0.7)), n=$('s10n'); n.style.opacity=s; n.style.transform=`translateY(${(1-s)*60}px)`;

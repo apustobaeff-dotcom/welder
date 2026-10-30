@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<title>РКНУ — brag v2</title>
+<link rel="stylesheet" href="fonts-local.css">
+<style>
+:root{
+  --bg:#EDF0F1; --surface:#FFFFFF; --sunk:#E3E8EA; --ink:#162027; --muted:#56646D; --line:#D1D9DD;
+  --copper:#AE5A24; --copper-soft:#F3E3D6; --teal:#1C7A7A; --teal-deep:#0E5C62; --teal-soft:#D8EBEA;
+  --bar:#B6C1C7; --crit:#BF3A2E; --crit-soft:#F6D9D5;
+  --f-display:"Unbounded","Golos Text",sans-serif;
+  --f-body:"Golos Text",sans-serif;
+  --f-mono:"JetBrains Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--f-body)}
+#stage{position:relative;width:1920px;height:1080px;overflow:hidden;
+  background:
+    linear-gradient(var(--line) 1px,transparent 1px) 0 0/120px 120px,
+    linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/120px 120px,
+    var(--bg)}
+#stage::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(237,240,241,.55) 0%,rgba(237,240,241,.92) 60%,var(--bg) 100%);pointer-events:none}
+.layer{position:absolute;inset:0;z-index:2}
+.chrome{position:absolute;left:96px;right:96px;top:52px;display:flex;justify-content:space-between;align-items:center;z-index:3}
+.brand{font-family:var(--f-display);font-weight:600;font-size:28px;letter-spacing:.04em}
+.brand b{color:var(--copper);font-weight:700}
+.brand span{color:var(--muted);font-weight:500}
+.step{font-family:var(--f-mono);font-size:26px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.prog{position:absolute;left:0;bottom:0;height:8px;background:var(--copper);z-index:3}
+
+.eyebrow{font-family:var(--f-mono);font-size:30px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.h{font-family:var(--f-display);font-weight:600;letter-spacing:-.01em;line-height:1.1}
+.sub{font-size:46px;color:var(--muted);line-height:1.25}
+.cu{color:var(--copper)}
+.head{position:absolute;left:96px;top:160px;width:1728px}
+.head .h{font-size:76px}
+.head .sub{margin-top:18px}
+
+/* S1 */
+#s1 .left{position:absolute;left:96px;top:230px;width:1050px}
+#s1 .big{font-family:var(--f-display);font-weight:600;font-size:340px;line-height:.95;color:var(--copper);letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:10px}
+#s1 .h{font-size:72px;margin-top:30px}
+#s1 .sub{margin-top:16px}
+#s1 svg{position:absolute;left:1180px;top:170px}
+
+/* S2 */
+#s2 .posts{position:absolute;left:96px;right:96px;top:500px;display:grid;grid-template-columns:repeat(6,1fr);gap:24px}
+.post{position:relative;height:400px;background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:26px;display:flex;flex-direction:column;justify-content:space-between}
+.post .t{font-family:var(--f-mono);font-size:30px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.post .st{font-size:32px;font-weight:600}
+.post svg{align-self:center}
+.post.on{border-color:var(--teal);background:var(--teal-soft)}
+.post.on .st{color:var(--teal-deep)}
+.post.off{background:var(--sunk)}
+.post.off .st{color:var(--crit)}
+.stamp{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%) rotate(-12deg);border:5px solid var(--crit);color:var(--crit);font-family:var(--f-display);font-weight:700;font-size:44px;padding:6px 22px;border-radius:10px;background:rgba(246,217,213,.9);text-transform:uppercase}
+
+/* S3 */
+#s3 .left{position:absolute;left:96px;top:290px;width:840px}
+#s3 .rk{font-family:var(--f-display);font-weight:700;font-size:210px;line-height:.95;color:var(--copper);letter-spacing:-.02em;margin-top:18px}
+#s3 .sub{margin-top:30px;font-size:50px;color:var(--ink);line-height:1.22}
+#s3 figure{position:absolute;left:980px;top:200px;width:844px;background:var(--surface);border:2px solid var(--line);border-radius:20px;padding:30px}
+#s3 canvas{display:block;width:784px;height:539px}
+#s3 figcaption{margin-top:18px;font-family:var(--f-mono);font-size:28px;color:var(--muted)}
+
+/* S4 line */
+#s4 svg.plan{position:absolute;left:96px;top:330px}
+.facts{position:absolute;left:96px;right:96px;top:820px;display:grid;grid-template-columns:repeat(3,1fr);border-top:2px solid var(--line)}
+.fact{padding:22px 30px 0 0;display:flex;flex-direction:column;gap:6px}
+.fact + .fact{padding-left:30px;border-left:2px solid var(--line)}
+.fact b{font-family:var(--f-display);font-weight:600;font-size:56px;color:var(--copper);white-space:nowrap}
+.fact span{font-size:32px;color:var(--muted);line-height:1.2}
+
+/* S5 floor */
+.frow{position:absolute;left:96px;width:1728px;display:grid;grid-template-columns:380px 1fr;align-items:center;gap:20px}
+.frow .lab b{display:block;font-family:var(--f-display);font-weight:600;font-size:46px}
+.frow .lab span{display:block;font-size:32px;color:var(--muted);margin-top:8px;line-height:1.2}
+.frow .lab .ppl{margin-top:14px;display:flex;gap:10px}
+.boxes{display:flex;gap:16px;align-items:stretch}
+.bx{height:150px;border-radius:12px;border:2px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:26px;color:var(--muted);text-align:center;line-height:1.2}
+.bx.on{background:var(--teal-soft);border-color:var(--teal);color:var(--teal-deep)}
+.bx.off{background:var(--sunk);color:var(--crit)}
+.bx.rb{background:var(--copper-soft);border-color:var(--copper);color:var(--copper);font-weight:500}
+.grp{display:flex;gap:8px;padding:10px;border:3px dashed var(--bar);border-radius:16px}
+
+/* S6 cycle */
+#s6 .bars{position:absolute;left:96px;top:500px;width:1728px}
+.brow{display:grid;grid-template-columns:300px 1fr;align-items:center;gap:28px;margin-bottom:56px}
+.brow .lab{font-size:40px;font-weight:600}
+.brow .lab small{display:block;font-family:var(--f-mono);font-size:26px;font-weight:400;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-top:4px}
+.track{position:relative;height:110px}
+.seg{position:absolute;top:0;height:110px;display:flex;align-items:center;padding-left:22px;font-family:var(--f-mono);font-size:32px;color:#fff;white-space:nowrap;overflow:hidden}
+.tot{position:absolute;top:0;height:110px;display:flex;align-items:center;font-family:var(--f-display);font-weight:600;font-size:52px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:40px;margin-left:328px;font-family:var(--f-mono);font-size:28px;color:var(--muted)}
+.legend i{display:inline-block;width:26px;height:26px;border-radius:5px;vertical-align:-4px;margin-right:10px}
+
+/* S7 KPI */
+#s7 .h em{font-style:normal;color:var(--copper)}
+#s7 .kpis{position:absolute;left:96px;right:96px;top:470px;display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--line);border-bottom:2px solid var(--line)}
+.kpi{padding:44px 30px 48px 0;display:flex;flex-direction:column;gap:20px}
+.kpi + .kpi{padding-left:30px;border-left:2px solid var(--line)}
+.kpi .v{font-family:var(--f-display);font-weight:600;font-size:100px;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums}
+.kpi .v i{font-style:normal;color:var(--muted);font-weight:500}
+.kpi .v .ar{color:var(--muted);font-weight:400;font-size:70px;margin:0 10px;display:inline-block;vertical-align:12px}
+.kpi .v b{color:var(--copper);font-weight:600;display:inline-block}
+.kpi .c{font-size:36px;color:var(--muted);line-height:1.25}
+
+/* S8 people */
+#s8 .qa{position:absolute;top:370px;width:820px;background:var(--surface);border:2px solid var(--line);border-radius:20px;padding:44px 48px;min-height:520px}
+#s8 .q{font-size:46px;font-weight:600;line-height:1.2}
+#s8 .q::before{content:"Вопрос";display:block;font-family:var(--f-mono);font-size:26px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+#s8 .a{margin-top:34px;border-left:8px solid var(--copper);padding-left:30px}
+#s8 .a b{display:block;font-family:var(--f-display);font-weight:600;font-size:96px;color:var(--copper);line-height:1}
+#s8 #a2 b{font-size:72px}
+#s8 .a span{display:block;font-size:38px;line-height:1.3;margin-top:16px}
+
+/* S9 TEO */
+#s9 .pb{position:absolute;left:96px;top:470px;width:1120px}
+.prow{margin-bottom:40px}
+.prow .pl{font-size:36px;font-weight:600;margin-bottom:12px}
+.prow .pl small{font-weight:400;color:var(--muted)}
+.ptrack{position:relative;height:96px}
+.pbar{position:absolute;left:0;top:0;height:96px;border-radius:10px}
+.pval{position:absolute;top:0;height:96px;display:flex;align-items:center;font-family:var(--f-display);font-weight:600;font-size:52px;white-space:nowrap}
+#s9 .badge{display:inline-block;margin-top:6px;background:var(--teal-soft);border:2px solid var(--teal);color:var(--teal-deep);border-radius:14px;padding:16px 28px;font-family:var(--f-display);font-weight:600;font-size:46px}
+#s9 .side{position:absolute;left:1300px;top:470px;width:524px;display:flex;flex-direction:column;gap:40px}
+.stat{border-top:2px solid var(--line);padding-top:24px}
+.stat b{display:block;font-family:var(--f-display);font-weight:600;font-size:72px;color:var(--copper);line-height:1.05;white-space:nowrap}
+.stat span{display:block;font-size:34px;color:var(--muted);line-height:1.25;margin-top:10px}
+
+/* S10 */
+#s10 .center{position:absolute;left:96px;top:190px;width:1150px}
+#s10 .big{font-family:var(--f-display);font-weight:600;font-size:250px;line-height:1;color:var(--copper);letter-spacing:-.02em}
+#s10 .big span{font-size:110px;letter-spacing:0}
+#s10 .sub{margin-top:20px;font-size:48px;color:var(--ink)}
+.callout{margin-top:34px;border-left:8px solid var(--copper);background:var(--copper-soft);padding:26px 36px;border-radius:0 16px 16px 0;font-size:42px;display:inline-block;line-height:1.25}
+.callout.risk{border-left-color:var(--crit);background:var(--crit-soft)}
+.callout b{font-weight:600}
+#s10 canvas{position:absolute;left:1330px;top:250px;width:500px;height:344px}
+</style></head>
+<body>
+<div id="stage">
+  <div class="chrome" id="chrome">
+    <div class="brand"><b>РКНУ</b> <span>· ООО «СМС»</span></div>
+    <div class="step" id="stepLabel"></div>
+  </div>
+
+  <!-- S1 hook 0–7.2 -->
+  <section class="layer" id="s1">
+    <div class="left">
+      <div class="eyebrow" id="s1e">Участок намотки · смена 12 ч</div>
+      <div class="big" id="s1n">0</div>
+      <div class="h" id="s1h">подъёма шпули 18 кг</div>
+      <div class="sub" id="s1s">на одного намотчика за смену</div>
+    </div>
+    <svg id="s1spool" width="640" height="780" viewBox="0 0 680 780">
+      <g id="s1lift">
+        <rect x="150" y="150" width="380" height="430" rx="8" fill="#E3E8EA" stroke="#D1D9DD" stroke-width="2"/>
+        <g id="s1turns"></g>
+        <rect x="110" y="120" width="40" height="490" rx="8" fill="#B6C1C7"/>
+        <rect x="530" y="120" width="40" height="490" rx="8" fill="#B6C1C7"/>
+        <rect x="255" y="14" width="170" height="80" rx="12" fill="#162027"/>
+        <text x="340" y="66" text-anchor="middle" font-family="Unbounded" font-weight="600" font-size="38" fill="#fff">18 кг</text>
+        <line x1="340" y1="94" x2="340" y2="120" stroke="#162027" stroke-width="4"/>
+      </g>
+      <g id="s1arrow" opacity="0">
+        <path d="M612 560 L612 330" stroke="#AE5A24" stroke-width="9" stroke-linecap="round"/>
+        <path d="M580 362 L612 320 L644 362" fill="none" stroke="#AE5A24" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <text x="340" y="700" text-anchor="middle" font-family="JetBrains Mono" font-size="30" fill="#56646D" letter-spacing="2">ШПУЛЯ BS300</text>
+    </svg>
+  </section>
+
+  <!-- S2 posts 7.2–14.4 -->
+  <section class="layer" id="s2">
+    <div class="head">
+      <div class="h" id="s2h">Из 6 постов работают <span class="cu">4</span></div>
+      <div class="sub" id="s2s">На два оставшихся некого поставить: двух намотчиков в смену хватает на четыре</div>
+    </div>
+    <div class="posts" id="posts"></div>
+  </section>
+
+  <!-- S3 reveal 14.4–19.2 -->
+  <section class="layer" id="s3">
+    <div class="left">
+      <div class="eyebrow" id="s3e">Концепция</div>
+      <div class="rk" id="s3t">РКНУ</div>
+      <div class="sub" id="s3s">роботизированный комплекс намотки и упаковки сварочной проволоки</div>
+    </div>
+    <figure id="s3f">
+      <canvas id="spool" width="1568" height="1078"></canvas>
+      <figcaption>Сечение шпули BS300 · рядная укладка</figcaption>
+    </figure>
+  </section>
+
+  <!-- S4 line 19.2–28.8 -->
+  <section class="layer" id="s4">
+    <div class="head">
+      <div class="h" id="s4h">Одна линия: <span class="cu">2 поста и робот</span></div>
+    </div>
+    <svg class="plan" id="s4plan" width="1728" height="440" viewBox="0 0 1728 440">
+      <g id="s4static">
+        <!-- modules -->
+        <g id="m1"><rect x="0" y="10" width="330" height="170" rx="14" fill="#D8EBEA" stroke="#1C7A7A" stroke-width="3"/>
+          <text x="24" y="52" font-family="JetBrains Mono" font-size="26" fill="#0E5C62">НАМОТОЧНЫЙ</text>
+          <text x="24" y="86" font-family="JetBrains Mono" font-size="26" fill="#0E5C62">МОДУЛЬ 1</text>
+          <g transform="translate(262 120)"><g id="sp1"><circle r="44" fill="none" stroke="#1C7A7A" stroke-width="14" stroke-dasharray="14 7"/><circle r="16" fill="#1C7A7A"/></g></g></g>
+        <g id="m2"><rect x="0" y="260" width="330" height="170" rx="14" fill="#D8EBEA" stroke="#1C7A7A" stroke-width="3"/>
+          <text x="24" y="302" font-family="JetBrains Mono" font-size="26" fill="#0E5C62">НАМОТОЧНЫЙ</text>
+          <text x="24" y="336" font-family="JetBrains Mono" font-size="26" fill="#0E5C62">МОДУЛЬ 2</text>
+          <g transform="translate(262 370)"><g id="sp2"><circle r="44" fill="none" stroke="#1C7A7A" stroke-width="14" stroke-dasharray="14 7"/><circle r="16" fill="#1C7A7A"/></g></g></g>
+        <!-- feed lines -->
+        <path d="M330 95 L400 220 M330 345 L400 220" stroke="#B6C1C7" stroke-width="6" fill="none"/>
+        <!-- conveyor -->
+        <rect x="400" y="200" width="790" height="40" rx="8" fill="#E3E8EA" stroke="#B6C1C7" stroke-width="2"/>
+        <g id="belt"></g>
+        <g><rect x="500" y="250" width="150" height="60" rx="10" fill="#fff" stroke="#D1D9DD" stroke-width="2"/>
+          <text x="575" y="290" text-anchor="middle" font-family="Golos Text" font-weight="600" font-size="28" fill="#162027">Весы</text></g>
+        <g><rect x="720" y="250" width="190" height="60" rx="10" fill="#fff" stroke="#D1D9DD" stroke-width="2"/>
+          <text x="815" y="290" text-anchor="middle" font-family="Golos Text" font-weight="600" font-size="28" fill="#162027">Принтер</text></g>
+        <text x="1000" y="290" text-anchor="middle" font-family="Golos Text" font-weight="600" font-size="28" fill="#56646D">транспортер</text>
+        <text id="wread" x="575" y="180" text-anchor="middle" font-family="Unbounded" font-weight="600" font-size="34" fill="#1C7A7A" opacity="0">18,0 кг</text>
+        <!-- robot zone -->
+        <rect x="1210" y="4" width="514" height="432" rx="18" fill="rgba(243,227,214,.35)" stroke="#AE5A24" stroke-width="4" stroke-dasharray="16 10"/>
+        <text x="1236" y="44" font-family="JetBrains Mono" font-size="24" fill="#AE5A24">ЗОНА РОБОТА · ОГРАЖДЕНИЕ</text>
+        <rect x="1520" y="70" width="180" height="130" rx="10" fill="#fff" stroke="#B6C1C7" stroke-width="3"/>
+        <text x="1610" y="225" text-anchor="middle" font-family="JetBrains Mono" font-size="22" fill="#56646D">ПАЛЛЕТА 1</text>
+        <rect x="1520" y="270" width="180" height="130" rx="10" fill="#fff" stroke="#B6C1C7" stroke-width="3"/>
+        <text x="1610" y="425" text-anchor="middle" font-family="JetBrains Mono" font-size="22" fill="#56646D">ПАЛЛЕТА 2</text>
+      </g>
+      <g id="pal1"></g><g id="pal2"></g>
+      <g id="tokens"></g>
+      <g id="robot">
+        <line id="arm" x1="1350" y1="220" x2="1210" y2="220" stroke="#162027" stroke-width="18" stroke-linecap="round"/>
+        <circle cx="1350" cy="220" r="52" fill="#AE5A24"/>
+        <circle cx="1350" cy="220" r="20" fill="#F3E3D6"/>
+        <circle id="grip" cx="1210" cy="220" r="14" fill="#162027"/>
+      </g>
+      <g id="carry"></g>
+    </svg>
+    <div class="facts">
+      <div class="fact" id="f0"><b>≤ 60 м²</b><span>площадь линии</span></div>
+      <div class="fact" id="f1"><b>≥ 50 кг</b><span>грузоподъёмность робота</span></div>
+      <div class="fact" id="f2"><b>2 паллеты</b><span>смена паллеты без остановки линии</span></div>
+    </div>
+  </section>
+
+  <!-- S5 floor 28.8–36.0 -->
+  <section class="layer" id="s5">
+    <div class="head">
+      <div class="h" id="s5h">3 линии на месте <span class="cu">6 постов</span></div>
+      <div class="sub" id="s5s">Площадь участка — те же 180 м²</div>
+    </div>
+    <div class="frow" id="fa" style="top:420px">
+      <div class="lab"><b>Сейчас</b><span>2 намотчика в смену</span></div>
+      <div class="boxes" id="boxA"></div>
+    </div>
+    <div class="frow" id="fb" style="top:680px">
+      <div class="lab"><b class="cu">РКНУ</b><span>1 оператор-наладчик в смену</span></div>
+      <div class="boxes" id="boxB"></div>
+    </div>
+  </section>
+
+  <!-- S6 cycle 36.0–43.2 -->
+  <section class="layer" id="s6">
+    <div class="head">
+      <div class="h" id="s6h">Цикл BS300: 420 → <span class="cu">271 с</span></div>
+      <div class="sub" id="s6s">Остаётся только машинная намотка</div>
+    </div>
+    <div class="bars">
+      <div class="brow" id="b1"><div class="lab">Сейчас<small>вручную</small></div><div class="track" id="t1"></div></div>
+      <div class="brow" id="b2"><div class="lab cu">РКНУ<small>робот + рецепт</small></div><div class="track" id="t2"></div></div>
+      <div class="legend" id="lg">
+        <span><i style="background:var(--teal)"></i>машинная намотка</span>
+        <span><i style="background:var(--copper)"></i>ручные операции</span>
+        <span><i style="background:var(--teal-deep)"></i>автосмена тары</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- S7 KPI 43.2–52.8 -->
+  <section class="layer" id="s7">
+    <div class="head"><div class="h" id="s7h">Снять кадровое ограничение, <em>а не ускорить намотку</em></div></div>
+    <div class="kpis" id="kpis">
+      <div class="kpi" id="k0"><div class="v"><i>4</i><span class="ar">→</span><b>6</b></div><div class="c">работающих постов из 6</div></div>
+      <div class="kpi" id="k1"><div class="v"><i>12</i><span class="ar">→</span><b>4</b></div><div class="c">человека на 6 постов</div></div>
+      <div class="kpi" id="k2"><div class="v"><i>83</i><span class="ar">→</span><b>0</b></div><div class="c">подъёмов 18 кг за смену</div></div>
+      <div class="kpi" id="k3"><div class="v"><i>3.1</i><span class="ar">→</span><b>2</b></div><div class="c">класс условий труда по тяжести</div></div>
+    </div>
+  </section>
+
+  <!-- S8 people 52.8–60.0 -->
+  <section class="layer" id="s8">
+    <div class="head"><div class="h" id="s8h">Сокращений нет</div><div class="sub" id="s8s">Проект закрывает вакансии</div></div>
+    <div class="qa" id="qa1" style="left:96px">
+      <div class="q">Сколько планируется уволить?</div>
+      <div class="a" id="a1"><b>Никого.</b><span>Проект отменяет найм 4 намотчиков; действующие переходят в операторы-наладчики и на смежные участки</span></div>
+    </div>
+    <div class="qa" id="qa2" style="left:1004px">
+      <div class="q">Как изменится оплата труда?</div>
+      <div class="a" id="a2"><b>Разряд выше.</b><span>Оплата зависит от квалификации, а не от выносливости</span></div>
+    </div>
+  </section>
+
+  <!-- S9 TEO 60.0–67.2 -->
+  <section class="layer" id="s9">
+    <div class="head">
+      <div class="h" id="s9h">Эффект создаёт <span class="cu">персонал</span></div>
+      <div class="sub" id="s9s">Шесть постов обслуживают 4,5 ставки вместо 12 намотчиков</div>
+    </div>
+    <div class="pb">
+      <div class="prow" id="pr1"><div class="pl">Вручную <small>· 12 намотчиков, млн ₽ в год</small></div><div class="ptrack" id="pt1"></div></div>
+      <div class="prow" id="pr2"><div class="pl cu">РКНУ <small>· 4 + 0,5 ставки, млн ₽ в год</small></div><div class="ptrack" id="pt2"></div></div>
+      <div class="badge" id="pbadge">−22,9 млн ₽ в год</div>
+    </div>
+    <div class="side">
+      <div class="stat" id="sx1"><b>42,5 млн ₽</b><span>без НДС: комплекс 40,8 млн + подготовка площадки 1,65 млн</span></div>
+      <div class="stat" id="sx2"><b>−50%</b><span>себестоимость намотки 1 т: 6 204 → ≤ 3 130 ₽</span></div>
+    </div>
+  </section>
+
+  <!-- S10 final 67.2–74.4 -->
+  <section class="layer" id="s10">
+    <div class="center">
+      <div class="big" id="s10n">36 <span>мес.</span></div>
+      <div class="sub" id="s10s">окупаемость доп. вложений к ручному варианту 6 постов</div>
+      <div><div class="callout risk" id="s10r">Главный риск: <b>КП на 40% дороже ТЭО → 55 мес.</b></div></div>
+      <div><div class="callout" id="s10c">Старт — <b>опытный образец: 1 линия, 13,6 млн ₽</b></div></div>
+    </div>
+    <canvas id="spool2" width="1000" height="688"></canvas>
+  </section>
+
+  <div class="prog" id="prog"></div>
+</div>
+
+<script>
+const DUR=74.4, BAR=2.4;
+const $=id=>document.getElementById(id);
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const p=(t,a,b)=>cl((t-a)/(b-a));
+const eo=x=>1-Math.pow(1-x,3);
+const eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eback=x=>{const c1=1.4,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2);};
+const lerp=(a,b,x)=>a+(b-a)*x;
+function show(el,t,tin,tout,dy=40,din=.6,dout=.35){
+  const i=eo(p(t,tin,tin+din)), o=eio(p(t,tout,tout+dout));
+  el.style.opacity=i*(1-o); el.style.transform=`translateY(${(1-i)*dy - o*dy*.6}px)`;
+}
+const SC={s1:[0,7.2],s2:[7.2,14.4],s3:[14.4,19.2],s4:[19.2,28.8],s5:[28.8,36],s6:[36,43.2],s7:[43.2,52.8],s8:[52.8,60],s9:[60,67.2],s10:[67.2,74.4]};
+function layer(id,t){const [a,b]=SC[id]; $(id).style.visibility=(t>=a-0.01&&t<b)?'visible':'hidden'; return [a,b-0.45];}
+
+/* ---------- S1 ---------- */
+(function(){let s='';for(let r=0;r<11;r++)for(let c=0;c<9;c++){const x=172+c*42+(r%2?21:0),y=560-r*37;if(x>512)continue;s+=`<circle cx="${x}" cy="${y}" r="19" fill="url(#cg)"/>`;}
+$('s1turns').innerHTML=`<defs><radialGradient id="cg" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#F3E3D6"/><stop offset="1" stop-color="#AE5A24"/></radialGradient></defs>`+s;})();
+
+/* ---------- S2 ---------- */
+(function(){let h='';for(let i=1;i<=6;i++){h+=`<div class="post" id="p${i}"><div class="t">Пост ${i}</div>
+<svg width="170" height="170" viewBox="-85 -85 170 170"><g id="r${i}"><circle r="78" fill="none" stroke="currentColor" stroke-width="6" opacity=".25"/>
+<circle r="60" fill="none" stroke="currentColor" stroke-width="22" stroke-dasharray="20 9" opacity=".9"/><circle r="26" fill="currentColor" opacity=".9"/><rect x="-4" y="-78" width="8" height="40" fill="currentColor"/></g></svg>
+<div class="st" id="st${i}">—</div>${i>4?`<div class="stamp" id="stp${i}">стоит</div>`:''}</div>`;}$('posts').innerHTML=h;})();
+
+/* ---------- spool canvas (logic from the page) ---------- */
+function drawSpool(prog,id,W,H){
+  const g=$(id).getContext('2d'); g.setTransform(2,0,0,2,0,0); g.clearRect(0,0,W,H);
+  const fl=W*0.06,x0=W*0.1,x1=W*0.9,yb=H*0.82,yt=H*0.1;
+  g.fillStyle='#B6C1C7'; g.fillRect(x0-fl,yt,fl,yb-yt+H*0.08); g.fillRect(x1,yt,fl,yb-yt+H*0.08);
+  g.fillStyle='#E3E8EA'; g.fillRect(x0,yb,x1-x0,H*0.08);
+  const r=W/40,cols=Math.floor((x1-x0)/(2*r)),dy=r*1.732,layers=Math.floor((yb-yt-r*2)/dy);
+  const per=[];let total=0;for(let L=0;L<layers;L++){per.push(cols-(L%2));total+=per[L];}
+  let left=Math.floor(prog*total*0.93)+3,gx=x0+r,gy=yb-r;
+  for(let L=0;L<layers&&left>0;L++){const off=(L%2)?r:0,n=per[L],y=yb-r-L*dy,k=Math.min(n,left);
+    for(let j=0;j<k;j++){const i=(L%2)?(n-1-j):j,x=x0+r+off+i*2*r;
+      const grd=g.createRadialGradient(x-r*.35,y-r*.35,r*.1,x,y,r);grd.addColorStop(0,'#F3E3D6');grd.addColorStop(1,'#AE5A24');
+      g.beginPath();g.arc(x,y,r*.92,0,Math.PI*2);g.fillStyle=grd;g.fill();gx=x;gy=y;}
+    left-=k;}
+  g.fillStyle='#1C7A7A'; g.fillRect(gx-r*.6,yt-H*.075,r*1.2,H*.05);
+  g.strokeStyle='#1C7A7A'; g.lineWidth=3; g.beginPath(); g.moveTo(gx,yt-H*.025); g.lineTo(gx,gy-r); g.stroke();
+}
+
+/* ---------- S4 line simulation ---------- */
+const T0=20.2, GAP=1.2;
+const PICK=[1210,220], BASE=[1350,220], PAL=[[1610,135],[1610,335]];
+function armAt(target){ // angle/len for a target point
+  const dx=target[0]-BASE[0], dy=target[1]-BASE[1]; return [Math.atan2(dy,dx), Math.hypot(dx,dy)];
+}
+function tokenPos(k,tl){ // tl = time since spawn
+  const src=k%2?[330,345]:[330,95];
+  if(tl<0.5) return [lerp(src[0],400,eio(tl/0.5)), lerp(src[1],220,eio(tl/0.5)), 'feed'];
+  const seg=[[0.5,0.8,400,575],[0.8,1.1,575,575],[1.1,1.4,575,815],[1.4,1.6,815,815],[1.6,2.3,815,1210]];
+  for(const [a,b,x0,x1] of seg) if(tl<b) return [lerp(x0,x1,eio((tl-a)/(b-a))),220,(x0===x1&&x0===575)?'w':'belt'];
+  return null;
+}
+function s4(t){
+  // modules spin
+  $('sp1').setAttribute('transform',`rotate(${t*300})`); $('sp2').setAttribute('transform',`rotate(${t*300+40})`);
+  // belt chevrons
+  let bl=''; const off=(t*120)%60; for(let x=410+off;x<1180;x+=60) bl+=`<path d="M${x} 208 l12 12 l-12 12" stroke="#B6C1C7" stroke-width="4" fill="none"/>`;
+  $('belt').innerHTML=bl;
+  let tok='', carry='', weigh=0, n1=0, n2=0;
+  let armT=PICK.slice(); let holding=false;
+  const nTok=Math.floor((t-T0)/GAP)+1;
+  for(let k=0;k<nTok;k++){
+    const tl=t-(T0+k*GAP); if(tl<0) continue;
+    const target=k%2; const labeled=tl>1.5;
+    if(tl<2.3){
+      const [x,y,ph]=tokenPos(k,tl); if(ph==='w') weigh=1;
+      tok+=`<circle cx="${x}" cy="${y}" r="24" fill="url(#tg)" stroke="#AE5A24" stroke-width="2"/>`+(labeled?`<rect x="${x-10}" y="${y-8}" width="20" height="16" rx="2" fill="#fff"/>`:'');
+    } else if(tl<3.1){
+      const q=eio((tl-2.3)/0.8);
+      const [a0,l0]=armAt(PICK),[a1,l1]=armAt(PAL[target]);
+      let A1=a1; if(target===0&&A1<a0-Math.PI) A1+=2*Math.PI; // over the top
+      if(target===0) A1=a1+2*Math.PI;
+      const a=lerp(a0,A1,q), l=lerp(l0,l1,q)*(1-0.4*Math.sin(Math.PI*q));
+      armT=[BASE[0]+Math.cos(a)*l, BASE[1]+Math.sin(a)*l]; holding=true;
+      carry+=`<circle cx="${armT[0]}" cy="${armT[1]}" r="24" fill="url(#tg)" stroke="#AE5A24" stroke-width="2"/><rect x="${armT[0]-10}" y="${armT[1]-8}" width="20" height="16" rx="2" fill="#fff"/>`;
+    } else {
+      if(target===0) n1++; else n2++;
+      if(tl<3.5){ const q=eio((tl-3.1)/0.4); const [a0,l0]=armAt(PAL[target]); let [a1,l1]=armAt(PICK);
+        let A0=target===0?a0+2*Math.PI:a0; const a=lerp(A0,a1,q), l=lerp(l0,l1,q)*(1-0.4*Math.sin(Math.PI*q));
+        if(!holding) armT=[BASE[0]+Math.cos(a)*l, BASE[1]+Math.sin(a)*l]; }
+    }
+  }
+  $('tokens').innerHTML=`<defs><radialGradient id="tg" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#F3E3D6"/><stop offset="1" stop-color="#AE5A24"/></radialGradient></defs>`+tok;
+  $('carry').innerHTML=carry;
+  $('arm').setAttribute('x2',armT[0]); $('arm').setAttribute('y2',armT[1]);
+  $('grip').setAttribute('cx',armT[0]); $('grip').setAttribute('cy',armT[1]);
+  $('wread').setAttribute('opacity',weigh);
+  const stack=(n,py)=>{let s='';for(let i=0;i<n;i++){const c=i%3,r=Math.floor(i/3);s+=`<circle cx="${1556+c*54}" cy="${py+96-r*44}" r="22" fill="url(#tg)" stroke="#AE5A24" stroke-width="2"/>`;}return s;};
+  $('pal1').innerHTML=stack(n1,70); $('pal2').innerHTML=stack(n2,270);
+}
+
+/* ---------- S5 boxes ---------- */
+(function(){
+  let a=''; for(let i=1;i<=6;i++) a+=`<div class="bx ${i<=4?'on':'off'}" id="ba${i}" style="width:190px">Пост ${i}<br>${i<=4?'намотка':'стоит'}</div>`;
+  $('boxA').innerHTML=a;
+  let b=''; for(let g=0;g<3;g++){ b+=`<div class="grp" id="gb${g}"><div class="bx on" style="width:112px">Пост ${g*2+1}</div><div class="bx on" style="width:112px">Пост ${g*2+2}</div><div class="bx rb" style="width:118px">Робот</div></div>`; }
+  $('boxB').innerHTML=b;
+})();
+
+/* ---------- S6 bars ---------- */
+const PX=1100/420;
+function bars(t,a){
+  const k=eio(p(t,a+2.0,a+3.4)), g1=eo(p(t,a+0.6,a+1.3)), g2=eo(p(t,a+1.0,a+1.6));
+  const m=253*PX, man=(167+(18-167)*k)*PX, c=k<.5?'#AE5A24':'#0E5C62';
+  $('t1').innerHTML=`<div class="seg" style="left:0;width:${m*g1}px;background:#1C7A7A;border-radius:10px 0 0 10px">253 с</div>`+
+    `<div class="seg" style="left:${m*g1}px;width:${167*PX*g1}px;background:#AE5A24;border-radius:0 10px 10px 0">167 с</div>`+
+    `<div class="tot" style="left:${(m+167*PX)*g1+24}px;opacity:${g1}">420 с</div>`;
+  const tot=Math.round(253+18+(167-18)*(1-k));
+  $('t2').innerHTML=`<div class="seg" style="left:0;width:${m*g2}px;background:#1C7A7A;border-radius:10px 0 0 10px">253 с</div>`+
+    `<div class="seg" style="left:${m*g2}px;width:${man*g2}px;background:${c};border-radius:0 10px 10px 0;padding-left:${k>.5?8:22}px">${k>.5?'18':Math.round(167+(18-167)*k)+' с'}</div>`+
+    `<div class="tot cu" style="left:${(m+man)*g2+24}px;opacity:${g2}">${tot} с</div>`;
+}
+
+/* ---------- S9 bars ---------- */
+const PPX=900/40;
+function pbars(t,a){
+  const g1=eo(p(t,a+1.0,a+1.8)), g2=eo(p(t,a+1.5,a+2.3));
+  $('pt1').innerHTML=`<div class="pbar" style="width:${36.8*PPX*g1}px;background:#B6C1C7"></div><div class="pval" style="left:${36.8*PPX*g1+20}px;opacity:${g1}">${(36.8*g1).toFixed(1).replace('.',',')}</div>`;
+  $('pt2').innerHTML=`<div class="pbar" style="width:${13.9*PPX*g2}px;background:#AE5A24"></div><div class="pval cu" style="left:${13.9*PPX*g2+20}px;opacity:${g2}">${(13.9*g2).toFixed(1).replace('.',',')}</div>`;
+}
+
+const LABELS=[[0,'Участок намотки'],[14.4,'Концепция'],[19.2,'Ячейка'],[28.8,'Участок'],[36,'Цикл'],[43.2,'Цели и KPI'],[52.8,'Персонал'],[60,'ТЭО'],[67.2,'Окупаемость']];
+
+function render(t){
+  $('prog').style.width=(t/DUR*1920)+'px';
+  $('chrome').style.opacity=eo(p(t,0.1,0.7));
+  let lab=''; for(const [a,l] of LABELS) if(t>=a) lab=l; $('stepLabel').textContent=lab;
+
+  let [a,o]=layer('s1',t);
+  show($('s1e'),t,0.1,o,30); show($('s1n'),t,0.2,o,60);
+  $('s1n').textContent=Math.round(83*eo(p(t,0.3,1.8)));
+  show($('s1h'),t,0.9,o,40); show($('s1s'),t,1.3,o,40); show($('s1spool'),t,0.4,o,60,.8);
+  const ph=t%1.2, lift=-Math.sin(Math.PI*cl(ph/0.6))*46*cl((t-1)/0.5);
+  $('s1lift').setAttribute('transform',`translate(0 ${lift})`);
+  $('s1arrow').setAttribute('opacity',cl((t-1.4)/0.4)*(0.35+0.65*Math.sin(Math.PI*cl(ph/0.6))));
+
+  [a,o]=layer('s2',t);
+  show($('s2h'),t,a+0.1,o); show($('s2s'),t,a+0.6,o);
+  for(let i=1;i<=6;i++){
+    const el=$('p'+i); show(el,t,a+0.6+i*0.1,o,70);
+    const on=i<=4 && t>=a+1.8+(i-1)*0.3;
+    el.className='post'+(i<=4?(on?' on':''):' off'); el.style.color=on?'#1C7A7A':'#B6C1C7';
+    $('st'+i).textContent=i<=4?(on?'намотка':'—'):'нет намотчика';
+    $('r'+i).setAttribute('transform',on?`rotate(${(t-a)*200})`:'rotate(0)');
+    if(i>4){const s=$('stp'+i),k=eback(p(t,a+3.6+(i-5)*0.6,a+4.0+(i-5)*0.6));
+      s.style.opacity=cl(k*1.5); s.style.transform=`translate(-50%,-50%) rotate(-12deg) scale(${1.6-0.6*k})`;}
+  }
+
+  [a,o]=layer('s3',t);
+  show($('s3e'),t,a+0.1,o,30); show($('s3t'),t,a+0.2,o,60); show($('s3s'),t,a+0.7,o); show($('s3f'),t,a+0.3,o,60);
+  drawSpool(eio(p(t,a+0.4,a+4.2)),'spool',784,539);
+
+  [a,o]=layer('s4',t);
+  show($('s4h'),t,a+0.1,o); show($('s4plan'),t,a+0.4,o,50,.8);
+  for(let i=0;i<3;i++) show($('f'+i),t,a+2.6+i*1.2,o,30);
+  if(t>=a-0.01&&t<a+9.6) s4(t);
+
+  [a,o]=layer('s5',t);
+  show($('s5h'),t,a+0.1,o); show($('s5s'),t,a+0.6,o); show($('fa'),t,a+1.0,o,40);
+  show($('fb'),t,a+2.6,o,40);
+  for(let g=0;g<3;g++){const el=$('gb'+g),k=eo(p(t,a+2.8+g*0.3,a+3.4+g*0.3)); el.style.opacity=k; el.style.transform=`scale(${0.9+0.1*k})`;}
+
+  [a,o]=layer('s6',t);
+  show($('s6h'),t,a+0.1,o); show($('s6s'),t,a+0.6,o);
+  show($('b1'),t,a+0.5,o); show($('b2'),t,a+0.9,o); show($('lg'),t,a+1.3,o,30);
+  bars(t,a);
+
+  [a,o]=layer('s7',t);
+  show($('s7h'),t,a+0.1,o); show($('kpis'),t,a+0.4,o,20);
+  for(let i=0;i<4;i++){
+    const b=a+1.0+i*1.2, el=$('k'+i); show(el,t,b,o,50,.5);
+    const bb=el.querySelector('b'), ar=el.querySelector('.ar'), k=eback(p(t,b+0.4,b+0.8));
+    bb.style.opacity=cl(k*1.4); bb.style.transform=`translateY(${(1-k)*30}px) scale(${0.85+0.15*k})`;
+    ar.style.opacity=cl(p(t,b+0.2,b+0.45));
+  }
+
+  [a,o]=layer('s8',t);
+  show($('s8h'),t,a+0.1,o); show($('s8s'),t,a+0.4,o); show($('qa1'),t,a+0.4,o,50); show($('a1'),t,a+1.2,o,20);
+  show($('qa2'),t,a+3.0,o,50); show($('a2'),t,a+3.8,o,20);
+
+  [a,o]=layer('s9',t);
+  show($('s9h'),t,a+0.1,o); show($('s9s'),t,a+0.5,o);
+  show($('pr1'),t,a+0.8,o,30); show($('pr2'),t,a+1.3,o,30); pbars(t,a);
+  show($('pbadge'),t,a+2.6,o,30); show($('sx1'),t,a+3.4,o,30); show($('sx2'),t,a+4.2,o,30);
+
+  [a,o]=layer('s10',t);
+  const s=eo(p(t,a+0.0,a+0.7)), n=$('s10n'); n.style.opacity=s; n.style.transform=`translateY(${(1-s)*60}px)`;
+  show($('s10s'),t,a+0.4,99); show($('s10r'),t,a+1.4,99,30); show($('s10c'),t,a+2.8,99,30);
+  const s2=$('spool2'); s2.style.opacity=eo(p(t,a+0.3,a+1.1)); s2.style.transform=`translateX(${(1-eo(p(t,a+0.3,a+1.1)))*60}px)`;
+  drawSpool(0.8+0.2*eio(p(t,a+0.3,a+6)),'spool2',500,344);
+}
+window.render=render;
+window.ready=document.fonts.ready.then(()=>Promise.all([...document.fonts].filter(f=>f.status!=='loaded').map(f=>f.load().catch(()=>0))));
+render(0);
+</script>
+</body></html>
